@@ -165,8 +165,11 @@ int yywrap(void) {
 }
 
 void put(const char* buffer) {
-	printf("%s", buffer);
 	fprintf(output, "%s", buffer);
+}
+
+FILE* out() {
+	return output;
 }
 
 int main(int argc, char *argv[]) {
