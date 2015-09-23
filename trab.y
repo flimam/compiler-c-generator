@@ -10,6 +10,16 @@ char PR_ALGORITMO_C[] = "#include <stdio.h>\n#include <stdlib.h>\n#include <math
 char PR_INICIO_C[] = "int main (int argc, char* argv[]) {\n";
 char PR_FIM_ALGO_C[] = "return 0;\n}\n";
 
+char PR_LOGICO_C[] = "int ";
+char PR_INTEIRO_C[] = "int ";
+char PR_REAL_C[] = "double ";
+char PR_CARACTER_C[] = "char ";
+
+char PR_SE_C[] = "if (";
+char PR_ENTAO_C[] = ") {\n";
+char PR_SENAO_C[] = "} else {\n";
+char PR_FIM_SE_C[] = "}\n";
+
 %}
 
 %union {
@@ -88,11 +98,11 @@ cmds:		PR_LEIA l_var cmds {}
 		|	PR_ESCREVA l_esc cmds {}
 		|	IDENTIFICADOR OP_ATRIB exp cmds {}
 		|	IDENTIFICADOR error cmds { printf("Bad attribution.\n\n"); }
-		|	PR_SE cond PR_ENTAO cmds sen PR_FIM_SE cmds {}
+		|	PR_SE { put(PR_SE_C); } cond PR_ENTAO { put(PR_ENTAO_C); } cmds sen PR_FIM_SE { put(PR_FIM_SE_C); } cmds {}
 		
 		|	PR_PARA IDENTIFICADOR OP_ATRIB exp_a PR_ATE exp_a PR_PASSO NUM_INTEIRO PR_FACA cmds PR_FIM_PARA cmds {} // -> PR_INTEIRO para exp_a: inicio e fim do para-passo definido por expressão algébrica.
 		
-		|	PR_ENQTO cond cmds PR_FIM_ENQTO cmds {}
+		|	PR_ENQTO {} cond cmds PR_FIM_ENQTO cmds {}
 		|	PR_REPITA cmds PR_ATE cond cmds {}
 		| 	IDENTIFICADOR ABRE_PAR l_var FECHA_PAR cmds {}
 		|	%empty {};
@@ -114,7 +124,7 @@ l_esc:		CONST_LIT l_escs {}
 l_escs:		VIRGULA l_esc {}
 		|	%empty {};
 
-sen:		PR_SENAO cmds {}
+sen:		PR_SENAO { put(PR_SENAO_C); } cmds {}
 		|	%empty {};
 
 // Adicionado o "procs" no final das produções e a palavra vazia, permitindo várias declarações
