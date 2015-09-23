@@ -9,15 +9,15 @@ Nome: Gabriel de Biasi
 RGM: 24785
 
 -> Arquivos presentes
-README.txt			-- Este arquivo;
-trab.l				-- Código-fonte do analisador léxico (flex);
-trab.y				-- Código-fonte do analisador sintático (bison);
-makefile			-- Regras de compilação;
-test.c 				-- Arquivo usado para os testes.
+* README.md				-- Este arquivo;
+* trab.l				-- Código-fonte do analisador léxico (flex);
+* trab.y				-- Código-fonte do analisador sintático (bison);
+* makefile				-- Regras de compilação;
+* test.po 				-- Arquivo usado para os testes.
 
 -> Execução
-1 - Rodar o 'make'
-2 - Executar ./run [FILE]
+1. Rodar o 'make'
+2. Executar ./run [FILE]
 
 Erros léxicos e sintáticos serão exibidos, se houver.
 

@@ -4,6 +4,11 @@
 
 extern int yylex ();
 extern void yyerror (const char *);
+extern void put(const char *);
+
+char PR_ALGORITMO_C[] = "#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n\n";
+char PR_INICIO_C[] = "int main (int argc, char* argv[]) {\n";
+char PR_FIM_ALGO_C[] = "return 0;\n}\n";
 
 %}
 
@@ -49,7 +54,7 @@ extern void yyerror (const char *);
 
 // Definição das produções da gramática
 
-algo:		PR_ALGORITMO IDENTIFICADOR procs PR_INICIO decl cmds PR_FIM_ALGO {};
+algo:		PR_ALGORITMO { put(PR_ALGORITMO_C); } IDENTIFICADOR procs PR_INICIO { put(PR_INICIO_C); } decl cmds PR_FIM_ALGO { put(PR_FIM_ALGO_C); };
 
 decl:		PR_DECLARE l_ids DOIS_PONTOS tipo PONTO_VIRGULA decl {}
 		|	PR_DECLARE error PONTO_VIRGULA decl { printf("Declaration error, ignoring variable.\n\n"); }

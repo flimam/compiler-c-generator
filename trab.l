@@ -13,6 +13,9 @@ typedef struct std {
 } IDENT;
 
 IDENT *lista = NULL;
+FILE* file = NULL;
+FILE* output = NULL;
+
 int insereLista(IDENT**, char*);
 
 %}
@@ -161,15 +164,26 @@ int yywrap(void) {
 	return 1;
 }
 
-int main(int argc, char *argv[]) {
-	FILE* file = NULL;
+void put(const char* buffer) {
+	printf("%s", buffer);
+	fprintf(output, "%s", buffer);
+}
 
+int main(int argc, char *argv[]) {
+	/* Abertura do arquivo de entrada. */
 	if ( argc > 1 ) {
 		file = fopen(argv[1], "r");
 		yyin = file;
 	} else {
 		printf("ERRO: Execute da seguinte maneira:\n%s [FILE]\n", argv[0]);
 		exit(1);
+	}
+	
+	/* Abertura do arquivo de saída, com nome de arquivo escolhido ou padrão. */
+	if (argc == 3) {
+		output = fopen(argv[2], "w");
+	} else {
+		output = fopen("output.c", "w");
 	}
 
 	/* Execução do parser */
@@ -186,6 +200,7 @@ int main(int argc, char *argv[]) {
 
 	freeLista(&lista);
 	fclose(file);
+	fclose(output);
 	return 0;
 }
 	 
