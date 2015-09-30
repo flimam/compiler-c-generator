@@ -7,9 +7,14 @@
 #define TRUNCA(x) ((int) (x/1))
 
 int main (int argc, char* argv[]) {
+printf("Entre com a quantidade de notas (max 100):");
+printf("%s", quant);
+printf("a quantidade sera", "olawewew", "dsdsds");
 if () {
 RESTOif () {
+printf("ALUNO APROVADO!");
 } else {
+printf("ALUNO REPROVADO!");
 }
 }
 return 0;

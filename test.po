@@ -21,6 +21,9 @@ inicio
 	
 	escreva "Entre com a quantidade de notas (max 100):"
 	leia quant
+
+	escreva quant
+	escreva "a quantidade sera", "olawewew", "dsdsds"
 	
 	se (quant >= 1 && quant <= 100) entao
 		para i = 1 ate quant passo 1 faca

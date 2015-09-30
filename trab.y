@@ -22,10 +22,17 @@ char PR_ENTAO_C[] = ") {\n";
 char PR_SENAO_C[] = "} else {\n";
 char PR_FIM_SE_C[] = "}\n";
 
+void makeprintf(char* b) {
+	if(b[0] == '"') {
+		fprintf(out(), "printf(%s);\n", b);
+	} else {
+		fprintf(out(), "printf(\"%%s\", %s);\n", b);
+	}
+}
+
 %}
 
 %union {
-	int type;
 	int integer;
 	char *string;
 	double real;
@@ -57,8 +64,7 @@ char PR_FIM_SE_C[] = "}\n";
 
 %token <string> PR_FUNCAO PR_ENTRADA PR_SAIDA PR_FIM_FUNCAO PR_PROCMTO PR_FIM_PROCMTO
 
-%type <string> algo
-%type <real> exp_a term_a fat_a
+%type <string> algo var l_var l_vrs exp_a term_a fat_a
 
 // Não-terminal inicial
 %start algo
@@ -98,7 +104,7 @@ tipo:		PR_LOGICO {}
 reg:		PR_REGISTRO ABRE_PAR decl FECHA_PAR {};
 
 cmds:		PR_LEIA l_var cmds {}
-		|	PR_ESCREVA l_esc cmds {}
+		|	PR_ESCREVA l_var { makeprintf($2); } cmds {}
 		|	IDENTIFICADOR OP_ATRIB exp cmds {}
 		|	IDENTIFICADOR error cmds { printf("Bad attribution.\n\n"); }
 		|	PR_SE { put(PR_SE_C); } cond PR_ENTAO { put(PR_ENTAO_C); } cmds sen PR_FIM_SE { put(PR_FIM_SE_C); } cmds {}
@@ -110,21 +116,16 @@ cmds:		PR_LEIA l_var cmds {}
 		| 	IDENTIFICADOR ABRE_PAR l_var FECHA_PAR cmds {}
 		|	%empty {};
 
-l_var:		var l_vrs {};
+l_var:		var l_vrs { $$ = $1; }
+		|	CONST_LIT l_vrs { $$ = $1; };
 
-l_vrs:		VIRGULA var {}
+l_vrs:		VIRGULA l_var {}
 		|	%empty {};
 
-var:		IDENTIFICADOR ind {};
+var:		IDENTIFICADOR { $$ = $1; } ind {};
 
-ind:		ABRE_COL exp_a FECHA_COL ind {} // -> PR_INTEIRO para exp_a: Aceitar acesso ao elemento do vetor por meio de expressão algébrica.
+ind:		ABRE_COL exp_a FECHA_COL ind {}
 		|	PONTO IDENTIFICADOR ind {}
-		|	%empty {};
-
-l_esc:		CONST_LIT l_escs {}
-		|	var l_escs {};
-
-l_escs:		VIRGULA l_esc {}
 		|	%empty {};
 
 sen:		PR_SENAO { put(PR_SENAO_C); } cmds {}
