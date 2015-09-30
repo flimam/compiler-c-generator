@@ -4,9 +4,11 @@
 
 extern int yylex ();
 extern void yyerror (const char *);
+extern FILE* out();
 extern void put(const char *);
 
 char PR_ALGORITMO_C[] = "#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n\n";
+char MACROS_C[] = "#define RESTO(x,y) (x%y)\n#define ABS(x) (x >= 0 ? x:-x)\n#define TRUNCA(x) ((int) (x/1))\n\n";
 char PR_INICIO_C[] = "int main (int argc, char* argv[]) {\n";
 char PR_FIM_ALGO_C[] = "return 0;\n}\n";
 
@@ -23,6 +25,7 @@ char PR_FIM_SE_C[] = "}\n";
 %}
 
 %union {
+	int type;
 	int integer;
 	char *string;
 	double real;
@@ -55,7 +58,7 @@ char PR_FIM_SE_C[] = "}\n";
 %token <string> PR_FUNCAO PR_ENTRADA PR_SAIDA PR_FIM_FUNCAO PR_PROCMTO PR_FIM_PROCMTO
 
 %type <string> algo
-%type <real> exp_a term_a
+%type <real> exp_a term_a fat_a
 
 // Não-terminal inicial
 %start algo
@@ -64,7 +67,7 @@ char PR_FIM_SE_C[] = "}\n";
 
 // Definição das produções da gramática
 
-algo:		PR_ALGORITMO { put(PR_ALGORITMO_C); } IDENTIFICADOR procs PR_INICIO { put(PR_INICIO_C); } decl cmds PR_FIM_ALGO { put(PR_FIM_ALGO_C); };
+algo:		PR_ALGORITMO { put(PR_ALGORITMO_C); put(MACROS_C); } IDENTIFICADOR procs PR_INICIO { put(PR_INICIO_C); } decl cmds PR_FIM_ALGO { put(PR_FIM_ALGO_C); };
 
 decl:		PR_DECLARE l_ids DOIS_PONTOS tipo PONTO_VIRGULA decl {}
 		|	PR_DECLARE error PONTO_VIRGULA decl { printf("Declaration error, ignoring variable.\n\n"); }
@@ -157,9 +160,9 @@ muldiv:		OP_ARIT_MULT {}
 adisub:		OP_ARIT_ADI {}
 		|	OP_ARIT_SUB {};
 
-func:		PR_ABS {}
-		|	PR_TRUNCA {}
-		|	PR_RESTO {}
+func:		PR_ABS { put("ABS"); }
+		|	PR_TRUNCA { put("TRUNCA"); }
+		|	PR_RESTO { put("RESTO"); }
 		|	IDENTIFICADOR {} // Nova produção para "func": uma chamada de função feita pelo programador
 
 exp_l:		rel op_log exp_l {}

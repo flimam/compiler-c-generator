@@ -28,6 +28,7 @@ inicio
 		fim_para
 	
 		media = calculaMedia(notas, quant)
+		media = RESTO(oi3,oi4)
 		
 		se (media >= 6) entao
 			escreva "ALUNO APROVADO!"
