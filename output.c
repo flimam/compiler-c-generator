@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 #define RESTO(x,y) (x%y)
 #define ABS(x) (x >= 0 ? x:-x)
@@ -8,12 +7,10 @@
 
 int main (int argc, char* argv[]) {
 printf("Entre com a quantidade de notas (max 100):");
+printf("a quantidade sera: ");
 printf("%s", quant);
-printf("a quantidade sera");
-printf("olawewew");
-printf("%s", dsdsds);
 if () {
-RESTOif () {
+if () {
 printf("ALUNO APROVADO!");
 } else {
 printf("ALUNO REPROVADO!");

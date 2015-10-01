@@ -22,8 +22,7 @@ inicio
 	escreva "Entre com a quantidade de notas (max 100):"
 	leia quant
 
-	escreva quant
-	escreva "a quantidade sera", "olawewew", dsdsds
+	escreva "a quantidade sera: ", quant
 	
 	se (quant >= 1 && quant <= 100) entao
 		para i = 1 ate quant passo 1 faca
@@ -31,7 +30,6 @@ inicio
 		fim_para
 	
 		media = calculaMedia(notas, quant)
-		media = RESTO(oi3,oi4)
 		
 		se (media >= 6) entao
 			escreva "ALUNO APROVADO!"

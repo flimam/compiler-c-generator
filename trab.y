@@ -10,7 +10,7 @@ extern void yyerror (const char *);
 extern FILE* out();
 extern void put(const char *);
 
-char PR_ALGORITMO_C[] = "#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n\n";
+char PR_ALGORITMO_C[] = "#include <stdio.h>\n#include <stdlib.h>\n\n";
 char MACROS_C[] = "#define RESTO(x,y) (x%y)\n#define ABS(x) (x >= 0 ? x:-x)\n#define TRUNCA(x) ((int) (x/1))\n\n";
 char PR_INICIO_C[] = "int main (int argc, char* argv[]) {\n";
 char PR_FIM_ALGO_C[] = "return 0;\n}\n";
@@ -27,7 +27,8 @@ char PR_FIM_SE_C[] = "}\n";
 
 vector<char*> pilha;
 
-char getType(const char*) {
+char getType(const char* var) {
+	// TODO tabela de símbolos
 	return 's';
 }
 
