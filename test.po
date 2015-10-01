@@ -23,7 +23,7 @@ inicio
 	leia quant
 
 	escreva quant
-	escreva "a quantidade sera", "olawewew", "dsdsds"
+	escreva "a quantidade sera", "olawewew", dsdsds
 	
 	se (quant >= 1 && quant <= 100) entao
 		para i = 1 ate quant passo 1 faca

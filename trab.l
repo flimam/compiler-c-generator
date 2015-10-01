@@ -26,7 +26,7 @@ delim		[ \t\n]+
 identificador 	[a-zA-Z][a-zA-Z0-9]{0,31}
 num_inteiro	[0-9]+
 num_real	[0-9]+,[0-9]+
-const_lit	(\")[^\n]*(\")
+const_lit	\"(\\.|[^"])*\"
 comment		\/\/[^\n]*
 
 %%

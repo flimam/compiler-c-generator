@@ -1,6 +1,9 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
+
+using namespace std;
 
 extern int yylex ();
 extern void yyerror (const char *);
@@ -22,12 +25,22 @@ char PR_ENTAO_C[] = ") {\n";
 char PR_SENAO_C[] = "} else {\n";
 char PR_FIM_SE_C[] = "}\n";
 
-void makeprintf(char* b) {
-	if(b[0] == '"') {
-		fprintf(out(), "printf(%s);\n", b);
-	} else {
-		fprintf(out(), "printf(\"%%s\", %s);\n", b);
+vector<char*> pilha;
+
+char getType(const char*) {
+	return 's';
+}
+
+void makeprintf() {
+	for(int i = 0; i < pilha.size(); i++) {
+		if (pilha[i][0] == '"') {
+			fprintf(out(), "printf(%s);\n", pilha[i]);
+		} else {
+			// BUSCA NA TABELA PRA DESCOBRIR SEU TIPO
+			fprintf(out(), "printf(\"%%%c\", %s);\n", getType(pilha[i]), pilha[i]);
+		}
 	}
+	pilha.clear();
 }
 
 %}
@@ -64,8 +77,9 @@ void makeprintf(char* b) {
 
 %token <string> PR_FUNCAO PR_ENTRADA PR_SAIDA PR_FIM_FUNCAO PR_PROCMTO PR_FIM_PROCMTO
 
-%type <string> algo var l_var l_vrs exp_a term_a fat_a
+%type <string> algo l_var l_vrs exp_a term_a fat_a
 
+%type <string> var
 // Não-terminal inicial
 %start algo
 
@@ -103,8 +117,8 @@ tipo:		PR_LOGICO {}
 
 reg:		PR_REGISTRO ABRE_PAR decl FECHA_PAR {};
 
-cmds:		PR_LEIA l_var cmds {}
-		|	PR_ESCREVA l_var { makeprintf($2); } cmds {}
+cmds:		PR_LEIA { pilha.clear(); } l_var cmds {}
+		|	PR_ESCREVA { pilha.clear(); } l_var { makeprintf(); } cmds {}
 		|	IDENTIFICADOR OP_ATRIB exp cmds {}
 		|	IDENTIFICADOR error cmds { printf("Bad attribution.\n\n"); }
 		|	PR_SE { put(PR_SE_C); } cond PR_ENTAO { put(PR_ENTAO_C); } cmds sen PR_FIM_SE { put(PR_FIM_SE_C); } cmds {}
@@ -113,16 +127,16 @@ cmds:		PR_LEIA l_var cmds {}
 		
 		|	PR_ENQTO {} cond cmds PR_FIM_ENQTO cmds {}
 		|	PR_REPITA cmds PR_ATE cond cmds {}
-		| 	IDENTIFICADOR ABRE_PAR l_var FECHA_PAR cmds {}
+		| 	IDENTIFICADOR ABRE_PAR { pilha.clear(); } l_var FECHA_PAR cmds {}
 		|	%empty {};
 
-l_var:		var l_vrs { $$ = $1; }
-		|	CONST_LIT l_vrs { $$ = $1; };
+l_var:		var { pilha.push_back($1); } l_vrs
+		|	CONST_LIT { pilha.push_back($1); } l_vrs;
 
 l_vrs:		VIRGULA l_var {}
 		|	%empty {};
 
-var:		IDENTIFICADOR { $$ = $1; } ind {};
+var:		IDENTIFICADOR ind {};
 
 ind:		ABRE_COL exp_a FECHA_COL ind {}
 		|	PONTO IDENTIFICADOR ind {}
@@ -132,8 +146,8 @@ sen:		PR_SENAO { put(PR_SENAO_C); } cmds {}
 		|	%empty {};
 
 // Adicionado o "procs" no final das produções e a palavra vazia, permitindo várias declarações
-procs:		PR_FUNCAO IDENTIFICADOR PR_ENTRADA l_var PR_SAIDA l_var decl cmds PR_FIM_FUNCAO procs {}
-		|	PR_PROCMTO IDENTIFICADOR PR_ENTRADA l_var decl cmds PR_FIM_PROCMTO procs {}
+procs:		PR_FUNCAO IDENTIFICADOR PR_ENTRADA { pilha.clear(); } l_var PR_SAIDA { pilha.clear(); } l_var decl cmds PR_FIM_FUNCAO procs {}
+		|	PR_PROCMTO IDENTIFICADOR PR_ENTRADA { pilha.clear(); } l_var decl cmds PR_FIM_PROCMTO procs {}
 		|	PR_FUNCAO error PR_FIM_FUNCAO procs { printf("On FUNCAO definition. ignoring...\n\n"); }
 		|	PR_PROCMTO error PR_FIM_PROCMTO procs { printf("On PROCMTO definition. ignoring...\n\n"); }
 		|	%empty {};
@@ -150,7 +164,7 @@ term_a:		fat_a adisub term_a {}
 fat_a:		exp_a OP_ARIT_EXPO exp_a {}
 		|	exp_a OP_ARIT_RAD exp_a {}
 		|	ABRE_PAR exp_a FECHA_PAR {}
-		|	func ABRE_PAR l_var FECHA_PAR {}
+		|	func ABRE_PAR { pilha.clear(); } l_var FECHA_PAR {}
 		|	var {}
 		|	NUM_INTEIRO {}
 		|	NUM_REAL {};

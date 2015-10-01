@@ -9,7 +9,9 @@
 int main (int argc, char* argv[]) {
 printf("Entre com a quantidade de notas (max 100):");
 printf("%s", quant);
-printf("a quantidade sera", "olawewew", "dsdsds");
+printf("a quantidade sera");
+printf("olawewew");
+printf("%s", dsdsds);
 if () {
 RESTOif () {
 printf("ALUNO APROVADO!");
