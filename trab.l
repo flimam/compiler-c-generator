@@ -7,9 +7,9 @@
 
 #include "trab.tab.h"
 
-typedef struct std {
+typedef struct st {
 	char lexema[TAM_IDENT];	
-	struct std *prox;
+	struct st *prox;
 } IDENT;
 
 IDENT *lista = NULL;
@@ -26,7 +26,7 @@ delim		[ \t\n]+
 identificador 	[a-zA-Z][a-zA-Z0-9]{0,31}
 num_inteiro	[0-9]+
 num_real	[0-9]+,[0-9]+
-const_lit	(\")[^\n]*(\")
+const_lit	\"(\\.|[^"])*\"
 comment		\/\/[^\n]*
 
 %%
@@ -134,7 +134,7 @@ chamadas recursivas para chegar ae o fim da lista encadeada.
 	
 */
 int insereLista(IDENT** obj, char* lex) {
-	IDENT *new;
+	IDENT *ne;
 	if(*obj != NULL) {
 		if(!strcmp((*obj)->lexema, lex)) {
 			return 1;
@@ -142,10 +142,10 @@ int insereLista(IDENT** obj, char* lex) {
 			return insereLista(&((*obj)->prox), lex);
 		}		
 	} else {
-		new = (IDENT*) malloc(sizeof(IDENT));
-		strcpy(new->lexema, lex);
-		new->prox = NULL;
-		*obj = new;
+		ne = (IDENT*) malloc(sizeof(IDENT));
+		strcpy(ne->lexema, lex);
+		ne->prox = NULL;
+		*obj = ne;
 		return 0;
 	}
 }
