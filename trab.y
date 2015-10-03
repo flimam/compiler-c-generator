@@ -5,10 +5,18 @@
 
 using namespace std;
 
+#define TAM_IDENT 100
+enum Tipo { NONE, LOGICO, INTEIRO, REAL, CARACTER, REGISTRO };
+struct IDENT {
+	char lexema[TAM_IDENT];
+	Tipo type;
+};
+
 extern int yylex ();
 extern void yyerror (const char *);
-extern FILE* out();
-extern void put(const char *);
+extern FILE* output;
+extern vector<IDENT> tabela;
+vector<char*> pilha;
 
 char PR_ALGORITMO_C[] = "#include <stdio.h>\n#include <stdlib.h>\n\n";
 char MACROS_C[] = "#define RESTO(x,y) (x%y)\n#define ABS(x) (x >= 0 ? x:-x)\n#define TRUNCA(x) ((int) (x/1))\n\n";
@@ -25,7 +33,11 @@ char PR_ENTAO_C[] = ") {\n";
 char PR_SENAO_C[] = "} else {\n";
 char PR_FIM_SE_C[] = "}\n";
 
-vector<char*> pilha;
+
+
+void put(const char* buffer) {
+	fprintf(output, "%s", buffer);
+}
 
 char getType(const char* var) {
 	// TODO tabela de símbolos
@@ -35,10 +47,9 @@ char getType(const char* var) {
 void makeprintf() {
 	for(int i = 0; i < pilha.size(); i++) {
 		if (pilha[i][0] == '"') {
-			fprintf(out(), "printf(%s);\n", pilha[i]);
+			fprintf(output, "printf(%s);\n", pilha[i]);
 		} else {
-			// BUSCA NA TABELA PRA DESCOBRIR SEU TIPO
-			fprintf(out(), "printf(\"%%%c\", %s);\n", getType(pilha[i]), pilha[i]);
+			fprintf(output, "printf(\"%%%c\", %s);\n", getType(pilha[i]), pilha[i]);
 		}
 	}
 	pilha.clear();
