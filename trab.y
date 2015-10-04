@@ -55,6 +55,29 @@ void makeprintf() {
 	pilha.clear();
 }
 
+void makedeclare() {
+	for (int i = 0; i < pilha.size(); i++) {
+		if(pilha[i][0] == '[') {
+			char *var;
+			var = pilha.back();
+			pilha.pop_back();
+			fprintf(output, "%s%s", var, pilha[i]);
+		} else {
+			fprintf(output, "%s", pilha[i]);
+		}
+		if(i < pilha.size() - 1) {
+			fprintf(output, ", ");
+		}
+	}
+	put(";\n");
+}
+
+void makevector(int num_total) {
+	char *num;
+	asprintf(&num, "[%d]", num_total);
+	pilha.push_back(num);
+}
+
 %}
 
 %union {
@@ -101,12 +124,11 @@ void makeprintf() {
 
 algo:		PR_ALGORITMO { put(PR_ALGORITMO_C); put(MACROS_C); } IDENTIFICADOR procs PR_INICIO { put(PR_INICIO_C); } decl cmds PR_FIM_ALGO { put(PR_FIM_ALGO_C); };
 
-decl:		PR_DECLARE l_ids DOIS_PONTOS tipo PONTO_VIRGULA decl {}
+decl:		PR_DECLARE { pilha.clear(); } l_ids DOIS_PONTOS tipo PONTO_VIRGULA { makedeclare(); } decl {}
 		|	PR_DECLARE error PONTO_VIRGULA decl { printf("Declaration error, ignoring variable.\n\n"); }
 		|	%empty {};
 
-
-l_ids:		IDENTIFICADOR comp lids {};
+l_ids:		IDENTIFICADOR comp { pilha.push_back($1); } lids {};
 
 lids:		VIRGULA l_ids {}
 		|	%empty {};
@@ -115,16 +137,16 @@ comp:		ABRE_COL dim FECHA_COL {}
 		|	ABRE_COL error FECHA_COL { printf("Bad dimension.\n\n"); }
 		|	%empty {};
 
-dim:		NUM_INTEIRO PONTO PONTO NUM_INTEIRO dims {};
+dim:		NUM_INTEIRO PONTO PONTO NUM_INTEIRO dims { makevector($4); };
 
 dims:		VIRGULA dim {}
 		|	%empty {};
 
-tipo:		PR_LOGICO {}
-		|	PR_CARACTER {}
-		|	PR_INTEIRO {}
-		|	PR_REAL {}
-		|	IDENTIFICADOR {}
+tipo:		PR_LOGICO { put(PR_LOGICO_C); }
+		|	PR_CARACTER { put(PR_CARACTER_C); }
+		|	PR_INTEIRO { put(PR_INTEIRO_C); }
+		|	PR_REAL { put(PR_REAL_C); }
+		|	IDENTIFICADOR { put("nothing"); }
 		|	reg {};
 
 reg:		PR_REGISTRO ABRE_PAR decl FECHA_PAR {};

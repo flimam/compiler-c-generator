@@ -5,7 +5,11 @@
 #define ABS(x) (x >= 0 ? x:-x)
 #define TRUNCA(x) ((int) (x/1))
 
+double temp;
 int main (int argc, char* argv[]) {
+int i, quant;
+double notas[100];
+double media;
 printf("Entre com a quantidade de notas (max 100):");
 printf("a quantidade sera: ");
 printf("%s", quant);
