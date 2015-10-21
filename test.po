@@ -25,7 +25,7 @@ inicio
 	escreva "a quantidade sera: ", quant
 	
 	se (quant >= 1 && quant <= 100) entao
-		para i = 1 ate quant passo 1 faca
+		para i = 1 ate quant passo 2 faca
 			leia notas[i]
 		fim_para
 	
@@ -38,4 +38,12 @@ inicio
 		fim_se
 	fim_se
 	tchau = 1
+
+	enquanto (1 < 2)
+		escreva "ENQUANTO!"
+	fim_enquanto
+
+	repita
+		escreva "REPITA!"
+	ate (1 > 2)
 fim_algoritmo

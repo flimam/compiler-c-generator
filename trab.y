@@ -31,7 +31,13 @@ char PR_CARACTER_C[] = "char ";
 char PR_SE_C[] = "if (";
 char PR_ENTAO_C[] = ") {\n";
 char PR_SENAO_C[] = "} else {\n";
-char PR_FIM_SE_C[] = "}\n";
+char PR_FIM_C[] = "}\n";
+
+char PR_ENQUANTO_C[] = "while (";
+char PR_REPITA_C[] = "do {\n";
+char PR_ATE_C[] = "} while (!";
+char PR_FIM_REPITA_C[] = ");\n";
+char PR_PARA_C[] = "for (";
 
 
 
@@ -55,6 +61,11 @@ void makeprintf() {
 	pilha.clear();
 }
 
+char *int_to_char(int num) {
+	static char buffer[33];
+	snprintf(buffer, sizeof(buffer), "%d", num);
+	return buffer;
+}
 %}
 
 %union {
@@ -133,12 +144,12 @@ cmds:		PR_LEIA { pilha.clear(); } l_var cmds {}
 		|	PR_ESCREVA { pilha.clear(); } l_var { makeprintf(); } cmds {}
 		|	IDENTIFICADOR OP_ATRIB exp cmds {}
 		|	IDENTIFICADOR error cmds { printf("Bad attribution.\n\n"); }
-		|	PR_SE { put(PR_SE_C); } cond PR_ENTAO { put(PR_ENTAO_C); } cmds sen PR_FIM_SE { put(PR_FIM_SE_C); } cmds {}
+		|	PR_SE { put(PR_SE_C); } cond PR_ENTAO { put(PR_ENTAO_C); } cmds sen PR_FIM_SE { put(PR_FIM_C); } cmds {}
 		
-		|	PR_PARA IDENTIFICADOR OP_ATRIB exp_a PR_ATE exp_a PR_PASSO NUM_INTEIRO PR_FACA cmds PR_FIM_PARA cmds {} // -> PR_INTEIRO para exp_a: inicio e fim do para-passo definido por expressão algébrica.
+		|	PR_PARA { put(PR_PARA_C); } IDENTIFICADOR { put($3); } OP_ATRIB { put(" = "); } exp_a PR_ATE { put("; "); put($3); } exp_a PR_PASSO NUM_INTEIRO { put("; "); put($3); put(" = "); put($3); put(" + "); put(int_to_char($12)); } PR_FACA { put(PR_ENTAO_C); } cmds PR_FIM_PARA { put(PR_FIM_C); } cmds {} // -> PR_INTEIRO para exp_a: inicio e fim do para-passo definido por expressão algébrica.
 		
-		|	PR_ENQTO {} cond cmds PR_FIM_ENQTO cmds {}
-		|	PR_REPITA cmds PR_ATE cond cmds {}
+		|	PR_ENQTO { put(PR_ENQUANTO_C); } cond { put(PR_ENTAO_C); } cmds PR_FIM_ENQTO { put(PR_FIM_C); } cmds {}
+		|	PR_REPITA { put(PR_REPITA_C); } cmds PR_ATE { put(PR_ATE_C); } cond { put(PR_FIM_REPITA_C); } cmds {}
 		| 	IDENTIFICADOR ABRE_PAR { pilha.clear(); } l_var FECHA_PAR cmds {}
 		|	%empty {};
 
