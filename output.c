@@ -10,6 +10,7 @@ int main (int argc, char* argv[]) {
 int i, quant;
 double notas[100];
 double media;
+char nome[100];
 printf("Entre com a quantidade de notas (max 100):");
 printf("a quantidade sera: ");
 printf("%s", quant);
