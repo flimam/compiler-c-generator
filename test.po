@@ -18,6 +18,7 @@ inicio
 	declare i, quant: INTEIRO;
 	declare notas[1..100]: REAL;
 	declare media: REAL;
+	declare nome[1..100]: CARACTER;
 	
 	escreva "Entre com a quantidade de notas (max 100):"
 	leia quant
