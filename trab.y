@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <vector>
 
 using namespace std;
@@ -27,6 +28,7 @@ char PR_LOGICO_C[] = "int ";
 char PR_INTEIRO_C[] = "int ";
 char PR_REAL_C[] = "double ";
 char PR_CARACTER_C[] = "char ";
+Tipo tipos;
 
 char PR_SE_C[] = "if (";
 char PR_ENTAO_C[] = ") {\n";
@@ -55,15 +57,31 @@ void makeprintf() {
 	pilha.clear();
 }
 
+bool find(IDENT var) {
+	for(int i = 0; i < tabela.size(); i++) {
+		if(!strcmp(tabela[i].lexema, var.lexema)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void makedeclare() {
 	for (int i = 0; i < pilha.size(); i++) {
+		IDENT var;
 		if(pilha[i][0] == '[') {
-			char *var;
-			var = pilha.back();
+			char *vari;
+			vari = pilha.back();
 			pilha.pop_back();
-			fprintf(output, "%s%s", var, pilha[i]);
+			fprintf(output, "%s%s", vari, pilha[i]);
+			strcpy(var.lexema, vari);
 		} else {
 			fprintf(output, "%s", pilha[i]);
+			strcpy(var.lexema, pilha[i]);
+		}
+		var.type = tipos;
+		if(!find(var)) {
+			tabela.push_back(var);
 		}
 		if(i < pilha.size() - 1) {
 			fprintf(output, ", ");
@@ -142,11 +160,11 @@ dim:		NUM_INTEIRO PONTO PONTO NUM_INTEIRO dims { makevector($4); };
 dims:		VIRGULA dim {}
 		|	%empty {};
 
-tipo:		PR_LOGICO { put(PR_LOGICO_C); }
-		|	PR_CARACTER { put(PR_CARACTER_C); }
-		|	PR_INTEIRO { put(PR_INTEIRO_C); }
-		|	PR_REAL { put(PR_REAL_C); }
-		|	IDENTIFICADOR { put("nothing"); }
+tipo:		PR_LOGICO { put(PR_LOGICO_C); tipos = LOGICO; }
+		|	PR_CARACTER { put(PR_CARACTER_C); tipos = CARACTER; }
+		|	PR_INTEIRO { put(PR_INTEIRO_C); tipos = INTEIRO; }
+		|	PR_REAL { put(PR_REAL_C); tipos = REAL; }
+		|	IDENTIFICADOR { put("nothing"); tipos = NONE; }
 		|	reg {};
 
 reg:		PR_REGISTRO ABRE_PAR decl FECHA_PAR {};
