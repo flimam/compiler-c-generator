@@ -57,9 +57,10 @@ void makeprintf() {
 	pilha.clear();
 }
 
-bool find(IDENT var) {
+bool set_type(char *lexema) {
 	for(int i = 0; i < tabela.size(); i++) {
-		if(!strcmp(tabela[i].lexema, var.lexema)) {
+		if(!strcmp(tabela[i].lexema, lexema)) {
+			tabela[i].type = tipos;
 			return true;
 		}
 	}
@@ -68,20 +69,18 @@ bool find(IDENT var) {
 
 void makedeclare() {
 	for (int i = 0; i < pilha.size(); i++) {
-		IDENT var;
+		char *lexema;
 		if(pilha[i][0] == '[') {
-			char *vari;
-			vari = pilha.back();
+			lexema = pilha.back();
 			pilha.pop_back();
-			fprintf(output, "%s%s", vari, pilha[i]);
-			strcpy(var.lexema, vari);
+			fprintf(output, "%s%s", lexema, pilha[i]);
 		} else {
 			fprintf(output, "%s", pilha[i]);
-			strcpy(var.lexema, pilha[i]);
+			// strcpy(lexema, pilha[i]);
+			lexema = pilha[i];
 		}
-		var.type = tipos;
-		if(!find(var)) {
-			tabela.push_back(var);
+		if(!set_type(lexema)) {
+			printf("Lexema not found: %s\n\n", lexema);
 		}
 		if(i < pilha.size() - 1) {
 			fprintf(output, ", ");
