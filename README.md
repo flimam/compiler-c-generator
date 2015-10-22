@@ -6,7 +6,12 @@ Compiladores
 
 ## Analisador Léxico e Sintático, utilizando a ferramenta flex e bison.
 Nome: Gabriel de Biasi
+
 RGM: 24785
+
+Nome: Rodolpho Pivetta Sabino
+
+RGM: 23430
 
 ## Arquivos presentes
 * README.md				-- Este arquivo;
