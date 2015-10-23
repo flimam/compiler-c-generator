@@ -30,20 +30,30 @@ char PR_REAL_C[] = "double ";
 char PR_CARACTER_C[] = "char ";
 Tipo tipos;
 
-char PR_SE_C[] = "if (";
-char PR_ENTAO_C[] = ") {\n";
-char PR_SENAO_C[] = "} else {\n";
-char PR_FIM_SE_C[] = "}\n";
-
-
-
 void put(const char* buffer) {
 	fprintf(output, "%s", buffer);
 }
 
-char getType(const char* var) {
+char getType(char* var) {
+	char *bu = var;
+	// quebra da variável de struct
+	for(int i = strlen(bu)-1; i >= 0; i--) {
+		if(bu[i] == '.') {
+			bu = &var[++i];
+			break;
+		}
+	}
+
+	// quebra da variável do tipo "vetor"
+	for(int i = 0; i < strlen(bu); i++) {
+		if(bu[i] == '[') {
+			bu[i] = '\0';
+			break;
+		}
+	}
+
 	for(int i = 0; i < tabela.size(); i++) {
-		if(!strcmp(var, tabela[i].lexema)){
+		if(!strcmp(bu, tabela[i].lexema)){
 			switch(tabela[i].type) {
 				case INTEIRO:
 				case LOGICO:
@@ -69,6 +79,10 @@ void makeprintf() {
 		}
 	}
 	pilha.clear();
+}
+
+void makescanf() {
+	// TODO
 }
 
 bool set_type(char *lexema) {
@@ -102,9 +116,22 @@ void makedeclare() {
 	put(";\n");
 }
 
-void makevector(int num_total) {
+char* makelist() {
+	char bu[TAM_IDENT] = "";
+	for (int i = 0; i < pilha.size(); i++) {
+		strcat(bu, pilha[i]);
+		if(i < pilha.size()-1) {
+			strcat(bu, ",");
+		}
+	}
+	pilha.clear();
+	return strdup(bu);
+}
+
+void makevector(char* num_total) {
 	char *num;
-	asprintf(&num, "[%d]", num_total);
+	int numero = atoi(num_total);
+	asprintf(&num, "[%d]", numero);
 	pilha.push_back(num);
 }
 
@@ -121,9 +148,7 @@ void makevector(int num_total) {
 
 // Declaração dos tokens utilizados no compilador
 
-%token <string> IDENTIFICADOR CONST_LIT
-%token <integer> NUM_INTEIRO
-%token <real> NUM_REAL
+%token <string> IDENTIFICADOR CONST_LIT NUM_INTEIRO NUM_REAL
 
 %token <string> OP_ATRIB OP_ARIT_MULT OP_ARIT_DIV OP_ARIT_ADI OP_ARIT_SUB OP_ARIT_EXPO OP_ARIT_RAD
 
@@ -142,7 +167,7 @@ void makevector(int num_total) {
 
 %token <string> PR_FUNCAO PR_ENTRADA PR_SAIDA PR_FIM_FUNCAO PR_PROCMTO PR_FIM_PROCMTO
 
-%type <string> algo l_var l_vrs exp_a term_a fat_a
+%type <string> algo l_var l_vrs exp_a term_a fat_a adisub muldiv func exp exp_l op_rel rel fat_r op_log ind cmds cond
 
 %type <string> var
 // Não-terminal inicial
@@ -181,17 +206,17 @@ tipo:		PR_LOGICO { put(PR_LOGICO_C); tipos = LOGICO; }
 
 reg:		PR_REGISTRO ABRE_PAR decl FECHA_PAR {};
 
-cmds:		PR_LEIA { pilha.clear(); } l_var cmds {}
+cmds:		PR_LEIA { pilha.clear(); } l_var { makescanf(); } cmds {}
 		|	PR_ESCREVA { pilha.clear(); } l_var { makeprintf(); } cmds {}
-		|	IDENTIFICADOR OP_ATRIB exp cmds {}
+		|	IDENTIFICADOR OP_ATRIB exp { fprintf(output, "%s = %s;\n", $1, $3); } cmds {}
 		|	IDENTIFICADOR error cmds { printf("Bad attribution.\n\n"); }
-		|	PR_SE { put(PR_SE_C); } cond PR_ENTAO { put(PR_ENTAO_C); } cmds sen PR_FIM_SE { put(PR_FIM_SE_C); } cmds {}
+		|	PR_SE cond PR_ENTAO { fprintf(output, "if (%s) {\n", $2); free($2); } cmds sen PR_FIM_SE { put("}"); } cmds {}
 		
-		|	PR_PARA IDENTIFICADOR OP_ATRIB exp_a PR_ATE exp_a PR_PASSO NUM_INTEIRO PR_FACA cmds PR_FIM_PARA cmds {} // -> PR_INTEIRO para exp_a: inicio e fim do para-passo definido por expressão algébrica.
+		|	PR_PARA IDENTIFICADOR OP_ATRIB exp_a PR_ATE exp_a PR_PASSO exp_a PR_FACA { fprintf(output, "for (%s = %s; %s <= %s; %s+=%s) {\n", $2, $4, $2, $6, $2, $8); free($4); free($6); free($8); } cmds PR_FIM_PARA { put("}\n"); } cmds {} // -> PR_INTEIRO para exp_a: inicio e fim do para-passo definido por expressão algébrica.
 		
 		|	PR_ENQTO {} cond cmds PR_FIM_ENQTO cmds {}
 		|	PR_REPITA cmds PR_ATE cond cmds {}
-		| 	IDENTIFICADOR ABRE_PAR { pilha.clear(); } l_var FECHA_PAR cmds {}
+		| 	IDENTIFICADOR ABRE_PAR { pilha.clear(); } l_var FECHA_PAR { fprintf(output, "%s(%s)", $1, makelist()); free($1); } cmds {}
 		|	%empty {};
 
 l_var:		var { pilha.push_back($1); } l_vrs
@@ -200,13 +225,13 @@ l_var:		var { pilha.push_back($1); } l_vrs
 l_vrs:		VIRGULA l_var {}
 		|	%empty {};
 
-var:		IDENTIFICADOR ind {};
+var:		IDENTIFICADOR ind { asprintf(&$$, "%s%s", $1, $2); free($1); free($2); }
 
-ind:		ABRE_COL exp_a FECHA_COL ind {}
-		|	PONTO IDENTIFICADOR ind {}
-		|	%empty {};
+ind:		ABRE_COL exp_a FECHA_COL ind { asprintf(&$$, "[%s]%s", $2, $4); free($2); free($4); }
+		|	PONTO IDENTIFICADOR ind { asprintf(&$$, ".%s%s", $2, $3); free($2); free($3); }
+		|	%empty { $$ = strdup(""); };
 
-sen:		PR_SENAO { put(PR_SENAO_C); } cmds {}
+sen:		PR_SENAO { put("} else {\n"); } cmds {}
 		|	%empty {};
 
 // Adicionado o "procs" no final das produções e a palavra vazia, permitindo várias declarações
@@ -216,52 +241,52 @@ procs:		PR_FUNCAO IDENTIFICADOR PR_ENTRADA { pilha.clear(); } l_var PR_SAIDA { p
 		|	PR_PROCMTO error PR_FIM_PROCMTO procs { printf("On PROCMTO definition. ignoring...\n\n"); }
 		|	%empty {};
 
-exp:		exp_l {}
-		|	exp_a {};
+exp:		exp_l { $$ = $1; }
+		|	exp_a { $$ = $1; };
 
-exp_a:		term_a muldiv exp_a {}
-		|	term_a {};
+exp_a:		term_a muldiv exp_a { asprintf(&$$, "%s%s%s", $1, $2, $3);  free($1); free($2); free($3); }
+		|	term_a { $$ = $1; };
 
-term_a:		fat_a adisub term_a {}
-		|	fat_a {};
+term_a:		fat_a adisub term_a { asprintf(&$$, "%s%s%s", $1, $2, $3);  free($1); free($2); free($3);}
+		|	fat_a { $$ = $1; };
 
-fat_a:		exp_a OP_ARIT_EXPO exp_a {}
-		|	exp_a OP_ARIT_RAD exp_a {}
-		|	ABRE_PAR exp_a FECHA_PAR {}
-		|	func ABRE_PAR { pilha.clear(); } l_var FECHA_PAR {}
-		|	var {}
-		|	NUM_INTEIRO {}
-		|	NUM_REAL {};
+fat_a:		exp_a OP_ARIT_EXPO exp_a { asprintf(&$$, "%s%s%s", $1, $2, $3); free($1); free($2); free($3); }
+		|	exp_a OP_ARIT_RAD exp_a { asprintf(&$$, "%s%s%s", $1, $2, $3); free($1); free($2); free($3); }
+		|	ABRE_PAR exp_a FECHA_PAR { asprintf(&$$, "(%s)", $2); free($2); }
+		|	func ABRE_PAR { pilha.clear(); } l_var FECHA_PAR { asprintf(&$$, "%s(%s)", $1, makelist()); free($1); }
+		|	var { $$ = $1; }
+		|	NUM_INTEIRO { $$ = $1; }
+		|	NUM_REAL { $$ = $1; };
 
-muldiv:		OP_ARIT_MULT {}
-		|	OP_ARIT_DIV {};
+muldiv:		OP_ARIT_MULT { $$ = $1; }
+		|	OP_ARIT_DIV { $$ = $1; };
 
-adisub:		OP_ARIT_ADI {}
-		|	OP_ARIT_SUB {};
+adisub:		OP_ARIT_ADI { $$ = $1; }
+		|	OP_ARIT_SUB { $$ = $1; };
 
-func:		PR_ABS { put("ABS"); }
-		|	PR_TRUNCA { put("TRUNCA"); }
-		|	PR_RESTO { put("RESTO"); }
-		|	IDENTIFICADOR {} // Nova produção para "func": uma chamada de função feita pelo programador
+func:		PR_ABS { $$ = $1; }
+		|	PR_TRUNCA { $$ = $1; }
+		|	PR_RESTO { $$ = $1; }
+		|	IDENTIFICADOR { $$ = $1; }
 
-exp_l:		rel op_log exp_l {}
-		|	OP_LOG_NAO ABRE_PAR rel FECHA_PAR {}
+exp_l:		rel op_log exp_l { asprintf(&$$, "%s %s %s", $1, $2, $3); free($1); free($2); free($3); }
+		|	OP_LOG_NAO ABRE_PAR rel FECHA_PAR { asprintf(&$$, "%s(%s)", $1, $3); free($1); free($3); }
 		| 	rel {};
 
-rel:		fat_r op_rel fat_r {};
+rel:		fat_r op_rel fat_r { asprintf(&$$, "%s %s %s", $1, $2, $3); free($1); free($2); free($3); };
 
-fat_r:		fat_a {}
-		|	CONST_LIT {};
+fat_r:		fat_a { $$ = $1; }
+		|	CONST_LIT { $$ = $1; };
 
-op_log:		OP_LOG_AND {}
-		|	OP_LOG_OR {};
+op_log:		OP_LOG_AND { $$ = $1; }
+		|	OP_LOG_OR { $$ = $1; };
 
-op_rel:		OP_REL_IGUAL {}
-		|	OP_REL_NAOIGUAL {}
-		|	OP_REL_MAIOR {}
-		|	OP_REL_MAIORIGUAL {}
-		|	OP_REL_MENOR {}
-		|	OP_REL_MENORIGUAL {};
+op_rel:		OP_REL_IGUAL { $$ = $1; }
+		|	OP_REL_NAOIGUAL { $$ = $1; }
+		|	OP_REL_MAIOR { $$ = $1; }
+		|	OP_REL_MAIORIGUAL { $$ = $1; }
+		|	OP_REL_MENOR { $$ = $1; }
+		|	OP_REL_MENORIGUAL { $$ = $1; };
 
-cond:		ABRE_PAR exp_l FECHA_PAR {}
+cond:		ABRE_PAR exp_l FECHA_PAR { $$ = $2; }
 		|	ABRE_PAR error FECHA_PAR { printf("Bad condition.\n\n"); };
