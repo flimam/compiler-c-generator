@@ -26,7 +26,7 @@ char PR_FIM_ALGO_C[] = "return 0;\n}\n";
 
 char PR_LOGICO_C[] = "int ";
 char PR_INTEIRO_C[] = "int ";
-char PR_REAL_C[] = "double ";
+char PR_REAL_C[] = "float ";
 char PR_CARACTER_C[] = "char ";
 Tipo tipos;
 
@@ -35,7 +35,9 @@ void put(const char* buffer) {
 }
 
 char getType(char* var) {
-	char *bu = var;
+	char resp = '?';
+	char *bu2, *bu = strdup(var);
+	bu2 = bu;
 	// quebra da variável de struct
 	for(int i = strlen(bu)-1; i >= 0; i--) {
 		if(bu[i] == '.') {
@@ -53,21 +55,26 @@ char getType(char* var) {
 	}
 
 	for(int i = 0; i < tabela.size(); i++) {
-		if(!strcmp(bu, tabela[i].lexema)){
+		if(!strcmp(bu, tabela[i].lexema)) {
 			switch(tabela[i].type) {
 				case INTEIRO:
 				case LOGICO:
-				return 'd';
+				resp = 'd';
+				break;
 
 				case REAL:
-				return 'f';
+				resp = 'f';
+				break;
 
 				case CARACTER:
-				return 's';
+				resp = 's';
+				break;
 			}
+			break;
 		}
 	}
-	return '?';
+	free(bu2);
+	return resp;
 }
 
 void makeprintf() {
@@ -82,7 +89,10 @@ void makeprintf() {
 }
 
 void makescanf() {
-	// TODO
+	for(int i = 0; i < pilha.size(); i++) {
+			fprintf(output, "scanf(\"%%%c\", &%s);\n", getType(pilha[i]), pilha[i]);
+		}
+	pilha.clear();
 }
 
 bool set_type(char *lexema) {
@@ -135,6 +145,19 @@ void makevector(char* num_total) {
 	pilha.push_back(num);
 }
 
+/*
+Verifica se a variável foi declarada na tabela de símbolos
+*/
+void existsvar(char* var) {
+	char* b;
+	for(int i = 0; i < tabela.size(); i++) {
+		if(!strcmp(tabela[i].lexema, var) && tabela[i].type != NONE) return;
+	}
+	asprintf(&b, "Identifier \"%s\" used but not declared", var);
+	yyerror(b);
+	free(b);
+}
+
 %}
 
 %union {
@@ -180,7 +203,7 @@ void makevector(char* num_total) {
 algo:		PR_ALGORITMO { put(PR_ALGORITMO_C); put(MACROS_C); } IDENTIFICADOR procs PR_INICIO { put(PR_INICIO_C); } decl cmds PR_FIM_ALGO { put(PR_FIM_ALGO_C); };
 
 decl:		PR_DECLARE { pilha.clear(); } l_ids DOIS_PONTOS tipo PONTO_VIRGULA { makedeclare(); } decl {}
-		|	PR_DECLARE error PONTO_VIRGULA decl { printf("Declaration error, ignoring variable.\n\n"); }
+		|	PR_DECLARE error PONTO_VIRGULA decl { yyerror("Declaration error, ignoring variable"); }
 		|	%empty {};
 
 l_ids:		IDENTIFICADOR comp { pilha.push_back($1); } lids {};
@@ -189,7 +212,7 @@ lids:		VIRGULA l_ids {}
 		|	%empty {};
 
 comp:		ABRE_COL dim FECHA_COL {}
-		|	ABRE_COL error FECHA_COL { printf("Bad dimension.\n\n"); }
+		|	ABRE_COL error FECHA_COL { yyerror("Bad dimension"); }
 		|	%empty {};
 
 dim:		NUM_INTEIRO PONTO PONTO NUM_INTEIRO dims { makevector($4); };
@@ -201,22 +224,30 @@ tipo:		PR_LOGICO { put(PR_LOGICO_C); tipos = LOGICO; }
 		|	PR_CARACTER { put(PR_CARACTER_C); tipos = CARACTER; }
 		|	PR_INTEIRO { put(PR_INTEIRO_C); tipos = INTEIRO; }
 		|	PR_REAL { put(PR_REAL_C); tipos = REAL; }
-		|	IDENTIFICADOR { put($1); tipos = NONE; }
+		|	IDENTIFICADOR { existsvar($1); put($1); tipos = NONE; }
 		|	reg {};
 
 reg:		PR_REGISTRO ABRE_PAR decl FECHA_PAR {};
 
 cmds:		PR_LEIA { pilha.clear(); } l_var { makescanf(); } cmds {}
+		|	PR_LEIA error cmds { yyerror("Error on scanf"); }
+
 		|	PR_ESCREVA { pilha.clear(); } l_var { makeprintf(); } cmds {}
-		|	IDENTIFICADOR OP_ATRIB exp { fprintf(output, "%s = %s;\n", $1, $3); } cmds {}
+		|	PR_ESCREVA error cmds { yyerror("Error on printf"); }
+
+		|	IDENTIFICADOR { existsvar($1); } OP_ATRIB exp { fprintf(output, "%s = %s;\n", $1, $4); free($4); } cmds {}
 		|	IDENTIFICADOR error cmds { printf("Bad attribution.\n\n"); }
-		|	PR_SE cond PR_ENTAO { fprintf(output, "if (%s) {\n", $2); free($2); } cmds sen PR_FIM_SE { put("}"); } cmds {}
+
+		|	PR_SE cond PR_ENTAO { fprintf(output, "if (%s) {\n", $2); free($2); } cmds sen PR_FIM_SE { put("}\n"); } cmds {}
+
+		|	PR_PARA IDENTIFICADOR OP_ATRIB exp_a PR_ATE exp_a PR_PASSO exp_a PR_FACA { fprintf(output, "for (%s = %s; %s <= %s; %s+=%s) {\n", $2, $4, $2, $6, $2, $8); free($4); free($6); free($8); } cmds PR_FIM_PARA { put("}\n"); } cmds {}
 		
-		|	PR_PARA IDENTIFICADOR OP_ATRIB exp_a PR_ATE exp_a PR_PASSO exp_a PR_FACA { fprintf(output, "for (%s = %s; %s <= %s; %s+=%s) {\n", $2, $4, $2, $6, $2, $8); free($4); free($6); free($8); } cmds PR_FIM_PARA { put("}\n"); } cmds {} // -> PR_INTEIRO para exp_a: inicio e fim do para-passo definido por expressão algébrica.
+		|	PR_ENQTO cond PR_FACA { fprintf(output, "while (%s) {\n", $2); free($2); } cmds PR_FIM_ENQTO { put("}\n"); } cmds {}
+
+		|	PR_REPITA { put("do {\n"); } cmds PR_ATE cond { fprintf(output, "} while (!(%s));\n", $5); free($5); } cmds {}
+
+		| 	IDENTIFICADOR { existsvar($1); } ABRE_PAR { pilha.clear(); } l_var FECHA_PAR { fprintf(output, "%s(%s)", $1, makelist()); free($1); } cmds {}
 		
-		|	PR_ENQTO {} cond cmds PR_FIM_ENQTO cmds {}
-		|	PR_REPITA cmds PR_ATE cond cmds {}
-		| 	IDENTIFICADOR ABRE_PAR { pilha.clear(); } l_var FECHA_PAR { fprintf(output, "%s(%s)", $1, makelist()); free($1); } cmds {}
 		|	%empty {};
 
 l_var:		var { pilha.push_back($1); } l_vrs
@@ -225,20 +256,20 @@ l_var:		var { pilha.push_back($1); } l_vrs
 l_vrs:		VIRGULA l_var {}
 		|	%empty {};
 
-var:		IDENTIFICADOR ind { asprintf(&$$, "%s%s", $1, $2); free($1); free($2); }
+var:		IDENTIFICADOR { existsvar($1); } ind { asprintf(&$$, "%s%s", $1, $3); free($1); free($3); }
 
 ind:		ABRE_COL exp_a FECHA_COL ind { asprintf(&$$, "[%s]%s", $2, $4); free($2); free($4); }
-		|	PONTO IDENTIFICADOR ind { asprintf(&$$, ".%s%s", $2, $3); free($2); free($3); }
+		|	PONTO IDENTIFICADOR { existsvar($2); } ind { asprintf(&$$, ".%s%s", $2, $4); free($2); free($4); }
 		|	%empty { $$ = strdup(""); };
 
 sen:		PR_SENAO { put("} else {\n"); } cmds {}
-		|	%empty {};
+		|	%empty;
 
 // Adicionado o "procs" no final das produções e a palavra vazia, permitindo várias declarações
 procs:		PR_FUNCAO IDENTIFICADOR PR_ENTRADA { pilha.clear(); } l_var PR_SAIDA { pilha.clear(); } l_var decl cmds PR_FIM_FUNCAO procs {}
 		|	PR_PROCMTO IDENTIFICADOR PR_ENTRADA { pilha.clear(); } l_var decl cmds PR_FIM_PROCMTO procs {}
-		|	PR_FUNCAO error PR_FIM_FUNCAO procs { printf("On FUNCAO definition. ignoring...\n\n"); }
-		|	PR_PROCMTO error PR_FIM_PROCMTO procs { printf("On PROCMTO definition. ignoring...\n\n"); }
+		|	PR_FUNCAO error PR_FIM_FUNCAO procs { yyerror("On FUNCAO definition. ignoring.."); }
+		|	PR_PROCMTO error PR_FIM_PROCMTO procs { yyerror("On PROCMTO definition. ignoring.."); }
 		|	%empty {};
 
 exp:		exp_l { $$ = $1; }
@@ -267,11 +298,11 @@ adisub:		OP_ARIT_ADI { $$ = $1; }
 func:		PR_ABS { $$ = $1; }
 		|	PR_TRUNCA { $$ = $1; }
 		|	PR_RESTO { $$ = $1; }
-		|	IDENTIFICADOR { $$ = $1; }
+		|	IDENTIFICADOR { existsvar($1); $$ = $1; }
 
 exp_l:		rel op_log exp_l { asprintf(&$$, "%s %s %s", $1, $2, $3); free($1); free($2); free($3); }
 		|	OP_LOG_NAO ABRE_PAR rel FECHA_PAR { asprintf(&$$, "%s(%s)", $1, $3); free($1); free($3); }
-		| 	rel {};
+		| 	rel { $$ = $1; };
 
 rel:		fat_r op_rel fat_r { asprintf(&$$, "%s %s %s", $1, $2, $3); free($1); free($2); free($3); };
 
@@ -289,4 +320,4 @@ op_rel:		OP_REL_IGUAL { $$ = $1; }
 		|	OP_REL_MENORIGUAL { $$ = $1; };
 
 cond:		ABRE_PAR exp_l FECHA_PAR { $$ = $2; }
-		|	ABRE_PAR error FECHA_PAR { printf("Bad condition.\n\n"); };
+		|	ABRE_PAR error FECHA_PAR { yyerror("Bad condition"); };
