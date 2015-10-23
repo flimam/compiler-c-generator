@@ -42,8 +42,22 @@ void put(const char* buffer) {
 }
 
 char getType(const char* var) {
-	// TODO tabela de símbolos
-	return 's';
+	for(int i = 0; i < tabela.size(); i++) {
+		if(!strcmp(var, tabela[i].lexema)){
+			switch(tabela[i].type) {
+				case INTEIRO:
+				case LOGICO:
+				return 'd';
+
+				case REAL:
+				return 'f';
+
+				case CARACTER:
+				return 's';
+			}
+		}
+	}
+	return '?';
 }
 
 void makeprintf() {
@@ -76,7 +90,6 @@ void makedeclare() {
 			fprintf(output, "%s%s", lexema, pilha[i]);
 		} else {
 			fprintf(output, "%s", pilha[i]);
-			// strcpy(lexema, pilha[i]);
 			lexema = pilha[i];
 		}
 		if(!set_type(lexema)) {
@@ -163,7 +176,7 @@ tipo:		PR_LOGICO { put(PR_LOGICO_C); tipos = LOGICO; }
 		|	PR_CARACTER { put(PR_CARACTER_C); tipos = CARACTER; }
 		|	PR_INTEIRO { put(PR_INTEIRO_C); tipos = INTEIRO; }
 		|	PR_REAL { put(PR_REAL_C); tipos = REAL; }
-		|	IDENTIFICADOR { put("nothing"); tipos = NONE; }
+		|	IDENTIFICADOR { put($1); tipos = NONE; }
 		|	reg {};
 
 reg:		PR_REGISTRO ABRE_PAR decl FECHA_PAR {};

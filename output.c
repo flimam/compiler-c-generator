@@ -13,7 +13,7 @@ double media;
 char nome[100];
 printf("Entre com a quantidade de notas (max 100):");
 printf("a quantidade sera: ");
-printf("%s", quant);
+printf("%d", quant);
 if () {
 if () {
 printf("ALUNO APROVADO!");
