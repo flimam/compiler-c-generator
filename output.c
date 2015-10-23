@@ -5,28 +5,40 @@
 #define ABS(x) (x >= 0 ? x:-x)
 #define TRUNCA(x) ((int) (x/1))
 
-double temp;
-temp = 0;
-for (i = 1; i <= tamanho; i+=1) {
-temp = temp+vetor[i];
-}
-media = temp/tamanho;
 int main (int argc, char* argv[]) {
 int i, quant;
-double notas[100];
-double media;
-char nome[100];
+float media, temp, notas[100];
 printf("Entre com a quantidade de notas (max 100):");
-printf("a quantidade sera: ");
-printf("%d", quant);
+scanf("%d", &quant);
 if (quant >= 1 && quant <= 100) {
 for (i = 1; i <= quant; i+=1) {
+printf("Entre com a nota ");
+printf("%d", i);
+printf(": \n");
+scanf("%f", &notas[i]);
 }
-media = calculaMedia(notas,quant);
+printf("Lista das Notas:\n");
+i = 1;
+while (i <= quant) {
+printf("Nota ");
+printf("%d", i);
+printf(": ");
+printf("%f", notas[i]);
+printf("\n");
+i = i+1;
+}
+temp = 0;
+for (i = 1; i <= quant; i+=1) {
+temp = temp+notas[i];
+}
+media = temp/quant;
 if (media >= 6) {
-printf("ALUNO APROVADO!");
+printf("ALUNO APROVADO!\n");
 } else {
-printf("ALUNO REPROVADO!");
-}}tchau = 1;
+printf("ALUNO REPROVADO!\n");
+}
+} else {
+printf("Quantidade de alunos invalida!!");
+}
 return 0;
 }

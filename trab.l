@@ -119,7 +119,7 @@ Método usado para exibir os erros sintáticos
     
 */
 void yyerror(const char *str) { 
-    printf("ERROR\nLine %d: %s\n", yylineno, str);
+    printf("ERROR\nLine %d: %s\n\n", yylineno, str);
 }
 
 int yywrap(void) { 

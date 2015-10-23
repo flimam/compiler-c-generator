@@ -1,42 +1,41 @@
 algoritmo TESTE
 
-funcao calculaMedia
-	entrada vetor, tamanho
-	saida media
-	declare temp: REAL;
-	
-	temp = 0
-	para i = 1 ate tamanho passo 1 faca
-		temp = temp + vetor[i]
-	fim_para
-	media = temp / tamanho
-	
-fim_funcao
-
 inicio
 	// teste de comentário
 	declare i, quant: INTEIRO;
-	declare notas[1..100]: REAL;
-	declare media: REAL;
-	declare nome[1..100]: CARACTER;
+	declare media, temp, notas[1..100]: REAL;
 	
 	escreva "Entre com a quantidade de notas (max 100):"
 	leia quant
-
-	escreva "a quantidade sera: ", quant
 	
 	se (quant >= 1 && quant <= 100) entao
+
 		para i = 1 ate quant passo 1 faca
+			escreva "Entre com a nota ", i, ": \n"
 			leia notas[i]
 		fim_para
+
+		escreva "Lista das Notas:\n"
+		i = 1
+		enquanto (i <= quant) faca
+			escreva "Nota ", i, ": ", notas[i], "\n"
+			i = i+1
+		fim_enquanto
 	
-		media = calculaMedia(notas, quant)
+		temp = 0
+		para i = 1 ate quant passo 1 faca
+			temp = temp + notas[i]
+		fim_para
+		media = temp / quant
 		
 		se (media >= 6) entao
-			escreva "ALUNO APROVADO!"
+			escreva "ALUNO APROVADO!\n"
 		senao
-			escreva "ALUNO REPROVADO!"
+			escreva "ALUNO REPROVADO!\n"
 		fim_se
+
+	senao
+		escreva "Quantidade de alunos invalida!!"
 	fim_se
-	tchau = 1
+
 fim_algoritmo
