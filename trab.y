@@ -28,6 +28,7 @@ char PR_LOGICO_C[] = "int ";
 char PR_INTEIRO_C[] = "int ";
 char PR_REAL_C[] = "float ";
 char PR_CARACTER_C[] = "char ";
+char PR_REGISTRO_C[] = "typedef struct ";
 Tipo tipos;
 
 void put(const char* buffer) {
@@ -123,7 +124,9 @@ void makedeclare() {
 			fprintf(output, ", ");
 		}
 	}
-	put(";\n");
+	if(pilha.size() > 0) {
+		put(";\n");
+	}
 }
 
 char* makelist() {
@@ -225,9 +228,9 @@ tipo:		PR_LOGICO { put(PR_LOGICO_C); tipos = LOGICO; }
 		|	PR_INTEIRO { put(PR_INTEIRO_C); tipos = INTEIRO; }
 		|	PR_REAL { put(PR_REAL_C); tipos = REAL; }
 		|	IDENTIFICADOR { existsvar($1); put($1); tipos = NONE; }
-		|	reg {};
+		|	{ put(PR_REGISTRO_C); tipos = REGISTRO; } reg {};
 
-reg:		PR_REGISTRO ABRE_PAR decl FECHA_PAR {};
+reg:		PR_REGISTRO { fprintf(output, "%s {\n", $1); } ABRE_PAR decl FECHA_PAR { pilha.clear(); fprintf(output, "} %s;\n", $1); };
 
 cmds:		PR_LEIA { pilha.clear(); } l_var { makescanf(); } cmds {}
 		|	PR_LEIA error cmds { yyerror("Error on scanf"); }
