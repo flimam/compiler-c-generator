@@ -5,6 +5,12 @@
 #define ABS(x) (x >= 0 ? x:-x)
 #define TRUNCA(x) ((int) (x/1))
 
+void surpresa(){
+float valor;
+int oi;
+return;
+}
+
 int main (int argc, char* argv[]) {
 int i, quant;
 float media, temp, notas[100];

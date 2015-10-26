@@ -1,5 +1,13 @@
 algoritmo TESTE
 
+procedimento surpresa entrada i, j
+
+	declare valor: REAL;
+	declare oi: INTEIRO;
+
+fim_procedimento
+
+
 inicio
 	// teste de comentário
 	declare i, quant: INTEIRO;

@@ -10,6 +10,7 @@ using namespace std;
 
 #define TAM_IDENT 100
 enum Tipo { NONE, LOGICO, INTEIRO, REAL, CARACTER, REGISTRO };
+
 struct IDENT {
     char lexema[TAM_IDENT];
     Tipo type;

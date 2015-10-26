@@ -8,6 +8,7 @@ using namespace std;
 
 #define TAM_IDENT 100
 enum Tipo { NONE, LOGICO, INTEIRO, REAL, CARACTER, REGISTRO };
+
 struct IDENT {
 	char lexema[TAM_IDENT];
 	Tipo type;
@@ -266,8 +267,10 @@ sen:		PR_SENAO { put("} else {\n"); } cmds {}
 		|	%empty;
 
 // Adicionado o "procs" no final das produções e a palavra vazia, permitindo várias declarações
-procs:		PR_FUNCAO IDENTIFICADOR PR_ENTRADA { pilha.clear(); } l_var PR_SAIDA { pilha.clear(); } l_var decl cmds PR_FIM_FUNCAO procs {}
-		|	PR_PROCMTO IDENTIFICADOR PR_ENTRADA { pilha.clear(); } l_var decl cmds PR_FIM_PROCMTO procs {}
+procs:		PR_FUNCAO IDENTIFICADOR PR_ENTRADA { pilha.clear();  } l_var PR_SAIDA { pilha.clear(); } l_var decl cmds PR_FIM_FUNCAO procs {}
+
+		|	PR_PROCMTO IDENTIFICADOR PR_ENTRADA { pilha.clear(); fprintf(output,"void %s(",$2); free($2);  } l_var{  /*depende do email do chastel*/  put("){\n");} decl  cmds PR_FIM_PROCMTO {put("return;\n}\n\n");} procs {}
+
 		|	PR_FUNCAO error PR_FIM_FUNCAO procs { yyerror("On FUNCAO definition. ignoring.."); }
 		|	PR_PROCMTO error PR_FIM_PROCMTO procs { yyerror("On PROCMTO definition. ignoring.."); }
 		|	%empty {};
