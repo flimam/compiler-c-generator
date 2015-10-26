@@ -5,6 +5,10 @@ Curso de Bacharelado em Ciência da Computação
 Compiladores
 
 ## Analisador Léxico e Sintático, utilizando a ferramenta flex e bison.
+Nome: Felipe Lima Morais
+
+RGM: 24783
+
 Nome: Gabriel de Biasi
 
 RGM: 24785
