@@ -170,7 +170,3 @@ int main(int argc, char *argv[]) {
     fclose(output);
     return 0;
 }
-     
-
-
-

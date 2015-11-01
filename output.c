@@ -8,6 +8,10 @@
 int main (int argc, char* argv[]) {
 int i, quant;
 float media, temp, notas[100];
+typedef struct reg {
+int i;
+int quant;
+} reg;
 printf("Entre com a quantidade de notas (max 100):");
 scanf("%d", &quant);
 if (quant >= 1 && quant <= 100) {
