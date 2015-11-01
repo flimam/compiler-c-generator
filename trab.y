@@ -11,6 +11,7 @@ enum Tipo { NONE, LOGICO, INTEIRO, REAL, CARACTER, REGISTRO };
 struct IDENT {
 	char lexema[TAM_IDENT];
 	Tipo type;
+	char owner[TAM_IDENT];
 };
 
 extern int yylex ();
@@ -29,6 +30,7 @@ char PR_INTEIRO_C[] = "int ";
 char PR_REAL_C[] = "float ";
 char PR_CARACTER_C[] = "char ";
 Tipo tipos;
+char var_owner[TAM_IDENT];
 
 void put(const char* buffer) {
 	fprintf(output, "%s", buffer);
@@ -97,8 +99,9 @@ void makescanf() {
 
 bool set_type(char *lexema) {
 	for(int i = 0; i < tabela.size(); i++) {
-		if(!strcmp(tabela[i].lexema, lexema)) {
+		if(!strcmp(tabela[i].lexema, lexema) && !strcmp(tabela[i].owner, "")) {
 			tabela[i].type = tipos;
+			strcpy(tabela[i].owner, var_owner);
 			return true;
 		}
 	}
@@ -124,6 +127,10 @@ void makedeclare() {
 		}
 	}
 	put(";\n");
+	printf("\n\n");
+	for(int i = 0; i < tabela.size(); i++) {
+		printf("%s, %s\n", tabela[i].lexema, tabela[i].owner);
+	}
 }
 
 char* makelist() {
@@ -200,7 +207,7 @@ void existsvar(char* var) {
 
 // Definição das produções da gramática
 
-algo:		PR_ALGORITMO { put(PR_ALGORITMO_C); put(MACROS_C); } IDENTIFICADOR procs PR_INICIO { put(PR_INICIO_C); } decl cmds PR_FIM_ALGO { put(PR_FIM_ALGO_C); };
+algo:		PR_ALGORITMO { put(PR_ALGORITMO_C); put(MACROS_C); } IDENTIFICADOR procs PR_INICIO { put(PR_INICIO_C); strcpy(var_owner, "global"); } decl cmds PR_FIM_ALGO { put(PR_FIM_ALGO_C); };
 
 decl:		PR_DECLARE { pilha.clear(); } l_ids DOIS_PONTOS tipo PONTO_VIRGULA { makedeclare(); } decl {}
 		|	PR_DECLARE error PONTO_VIRGULA decl { yyerror("Declaration error, ignoring variable"); }

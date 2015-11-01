@@ -13,6 +13,7 @@ enum Tipo { NONE, LOGICO, INTEIRO, REAL, CARACTER, REGISTRO };
 struct IDENT {
     char lexema[TAM_IDENT];
     Tipo type;
+    char owner[TAM_IDENT];
 };
 
 FILE* file = NULL;
@@ -132,6 +133,7 @@ void insereTabela(const char* buffer) {
         if(!strcmp(tabela[i].lexema, buffer)) return;
     }
     obj.type = NONE;
+    strcpy(obj.owner, "");
     strcpy(obj.lexema, buffer);
     tabela.push_back(obj);
 }
