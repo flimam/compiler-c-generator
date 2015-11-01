@@ -9,8 +9,8 @@ int main (int argc, char* argv[]) {
 int i, quant;
 float media, temp, notas[100];
 typedef struct reg {
-int i;
-int quant;
+int ii;
+int quanti;
 } reg;
 printf("Entre com a quantidade de notas (max 100):");
 scanf("%d", &quant);

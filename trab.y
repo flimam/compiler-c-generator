@@ -11,7 +11,7 @@ enum Tipo { NONE, LOGICO, INTEIRO, REAL, CARACTER, REGISTRO };
 struct IDENT {
 	char lexema[TAM_IDENT];
 	Tipo type;
-	char owner[TAM_IDENT];
+	IDENT *owner = NULL;
 };
 
 extern int yylex ();
@@ -100,9 +100,13 @@ void makescanf() {
 
 bool set_type(char *lexema) {
 	for(int i = 0; i < tabela.size(); i++) {
-		if(!strcmp(tabela[i].lexema, lexema) && !strcmp(tabela[i].owner, "")) {
+		if(!strcmp(tabela[i].lexema, lexema) && tabela[i].owner == NULL) {
 			tabela[i].type = tipos;
-			strcpy(tabela[i].owner, var_owner);
+			for(int j = 0; j < tabela.size(); j++) {
+				if(!strcmp(tabela[j].lexema, var_owner)) {
+					tabela[i].owner = &tabela[j];
+				}
+			}
 			return true;
 		}
 	}
@@ -206,7 +210,7 @@ void existsvar(char* var) {
 
 // Definição das produções da gramática
 
-algo:		PR_ALGORITMO { put(PR_ALGORITMO_C); put(MACROS_C); } IDENTIFICADOR procs PR_INICIO { put(PR_INICIO_C); strcpy(var_owner, "global"); } decl cmds PR_FIM_ALGO { put(PR_FIM_ALGO_C); };
+algo:		PR_ALGORITMO { put(PR_ALGORITMO_C); put(MACROS_C); } IDENTIFICADOR procs PR_INICIO { put(PR_INICIO_C); strcpy(var_owner, $3); } decl cmds PR_FIM_ALGO { put(PR_FIM_ALGO_C); };
 
 decl:		PR_DECLARE { pilha.clear(); } l_ids DOIS_PONTOS tipo PONTO_VIRGULA { makedeclare(); } decl {}
 		|	PR_DECLARE error PONTO_VIRGULA decl { yyerror("Declaration error, ignoring variable"); }
@@ -233,7 +237,7 @@ tipo:		PR_LOGICO { put(PR_LOGICO_C); tipos = LOGICO; }
 		|	IDENTIFICADOR { existsvar($1); put($1); tipos = NONE; }
 		|	{ put(PR_REGISTRO_C); tipos = REGISTRO; } reg {};
 
-reg:		PR_REGISTRO { fprintf(output, "%s {\n", $1); } ABRE_PAR decl FECHA_PAR { pilha.clear(); fprintf(output, "} %s;\n", $1); };
+reg:		PR_REGISTRO { fprintf(output, "%s {\n", $1); strcpy(var_owner, $1); } ABRE_PAR decl FECHA_PAR { pilha.clear(); fprintf(output, "} %s;\n", $1); };
 
 cmds:		PR_LEIA { pilha.clear(); } l_var { makescanf(); } cmds {}
 		|	PR_LEIA error cmds { yyerror("Error on scanf"); }

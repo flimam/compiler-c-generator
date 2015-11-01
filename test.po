@@ -4,7 +4,7 @@ inicio
 	// teste de comentário
 	declare i, quant: INTEIRO;
 	declare media, temp, notas[1..100]: REAL;
-	declare reg: REGISTRO (declare i: INTEIRO; declare quant: INTEIRO; );
+	declare reg: REGISTRO (declare ii: INTEIRO; declare quanti: INTEIRO; );
 	
 	escreva "Entre com a quantidade de notas (max 100):"
 	leia quant
