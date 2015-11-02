@@ -8,6 +8,7 @@
 int main (int argc, char* argv[]) {
 int i, quant;
 float media, temp, notas[100];
+char nome[200];
 typedef struct reg {
 int i;
 int quant;
@@ -15,6 +16,8 @@ int quant;
 printf("Entre com a quantidade de notas (max 100):");
 scanf("%d", &quant);
 if (quant >= 1 && quant <= 100) {
+printf("Escreva seu nome:\n");
+scanf("%c", &nome);
 for (i = 1; i <= quant; i+=1) {
 printf("Entre com a nota ");
 printf("%d", i);
@@ -36,11 +39,14 @@ for (i = 1; i <= quant; i+=1) {
 temp = temp+notas[i];
 }
 media = temp/quant;
-if (media >= 6) {
+if (media >= TRUNCA(6)) {
 printf("ALUNO APROVADO!\n");
 } else {
 printf("ALUNO REPROVADO!\n");
 }
+printf("Fim do acesso do usuário ");
+printf("%c", nome);
+printf(".\n");
 } else {
 printf("Quantidade de alunos invalida!!");
 }

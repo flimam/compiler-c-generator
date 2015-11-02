@@ -9,7 +9,7 @@ using namespace std;
 #include "trab.tab.h"
 
 #define TAM_IDENT 100
-enum Tipo { NONE, LOGICO, INTEIRO, REAL, CARACTER, REGISTRO };
+enum Tipo { NONE, LOGICO, INTEIRO, REAL, CARACTER, REGISTRO, ARRAY_LOGICO, ARRAY_INTEIRO, ARRAY_REAL, ARRAY_CARACTER, ARRAY_REGISTRO };
 struct IDENT {
     char lexema[TAM_IDENT];
     Tipo type;
