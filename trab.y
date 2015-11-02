@@ -60,10 +60,13 @@ char getType(char* var) {
 			switch(tabela[i].type) {
 				case INTEIRO:
 				case LOGICO:
+				case ARRAY_INTEIRO:
+				case ARRAY_LOGICO:
 				resp = 'd';
 				break;
 
 				case REAL:
+				case ARRAY_REAL:
 				resp = 'f';
 				break;
 
@@ -103,7 +106,7 @@ void makescanf() {
 	pilha.clear();
 }
 
-bool set_type(char *lexema) {
+bool set_type(char *lexema, bool is_vector) {
 	for(int i = 0; i < tabela.size(); i++) {
 		if(!strcmp(tabela[i].lexema, lexema)) {
 			if(tabela[i].type != NONE) {
@@ -113,7 +116,29 @@ bool set_type(char *lexema) {
 				free(b);
 				return true;
 			}
-			// tratar novos tipos
+			if(is_vector) {
+				switch(tipos) {
+					case LOGICO:
+						tipos = ARRAY_LOGICO;
+					break;
+
+					case INTEIRO:
+						tipos = ARRAY_INTEIRO;
+					break;
+
+					case REAL:
+						tipos = ARRAY_REAL;
+					break;
+
+					case CARACTER:
+						tipos = ARRAY_CARACTER;
+					break;
+
+					case REGISTRO:
+						tipos = ARRAY_REGISTRO;
+					break;
+				}
+			}
 			tabela[i].type = tipos;
 			return true;
 		}
@@ -124,16 +149,17 @@ bool set_type(char *lexema) {
 void makedeclare() {
 	for (int i = 0; i < pilha.size(); i++) {
 		char *lexema;
+		bool is_vector = false;
 		if(pilha[i][0] == '[') {
-			lexema = pilha.back();
-			pilha.pop_back();
+			lexema = pilha[i + 1];
+			pilha.erase(pilha.begin() + i + 1);
 			fprintf(output, "%s%s", lexema, pilha[i]);
+			is_vector = true;
 		} else {
 			fprintf(output, "%s", pilha[i]);
 			lexema = pilha[i];
 		}
-		if(!set_type(lexema)) {
-			// é preciso passar pro set_type se este lexema é um vetor ou não
+		if(!set_type(lexema, is_vector)) {
 			printf("Lexema not found: %s\n\n", lexema);
 		}
 		if(i < pilha.size() - 1) {
@@ -158,9 +184,16 @@ char* makelist() {
 }
 
 void makevector(char* num_total) {
-	char *num;
+	char *num, *temp;
 	int numero = atoi(num_total);
 	asprintf(&num, "[%d]", numero);
+	if(pilha.size()) {
+		if(pilha.back()[0] == '[') {
+			temp = pilha.back();
+			pilha.pop_back();
+			strcat(num, temp);
+		}
+	}
 	pilha.push_back(num);
 }
 
