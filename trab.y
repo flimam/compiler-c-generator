@@ -7,7 +7,7 @@
 using namespace std;
 
 #define TAM_IDENT 100
-enum Tipo { NONE, LOGICO, INTEIRO, REAL, CARACTER, REGISTRO };
+enum Tipo { NONE, LOGICO, INTEIRO, REAL, CARACTER, REGISTRO, ARRAY_LOGICO, ARRAY_INTEIRO, ARRAY_REAL, ARRAY_CARACTER, ARRAY_REGISTRO };
 struct IDENT {
 	char lexema[TAM_IDENT];
 	Tipo type;
@@ -68,6 +68,10 @@ char getType(char* var) {
 				break;
 
 				case CARACTER:
+				resp = 'c';
+				break;
+
+				case ARRAY_CARACTER:
 				resp = 's';
 				break;
 			}
@@ -90,9 +94,12 @@ void makeprintf() {
 }
 
 void makescanf() {
+	char type, addr;
 	for(int i = 0; i < pilha.size(); i++) {
-			fprintf(output, "scanf(\"%%%c\", &%s);\n", getType(pilha[i]), pilha[i]);
-		}
+		type = getType(pilha[i]);
+		addr = (type != ARRAY_CARACTER) ? '&' : '\0';
+		fprintf(output, "scanf(\"%%%c\", %c%s);\n", type, addr, pilha[i]);
+	}
 	pilha.clear();
 }
 
@@ -101,11 +108,12 @@ bool set_type(char *lexema) {
 		if(!strcmp(tabela[i].lexema, lexema)) {
 			if(tabela[i].type != NONE) {
 				char* b;
-				asprintf(&b, "Identifier \"%s\" already declared", lexema);
+				asprintf(&b, "Identifier \"%s\" is already declared", lexema);
 				yyerror(b);
 				free(b);
 				return true;
 			}
+			// tratar novos tipos
 			tabela[i].type = tipos;
 			return true;
 		}
@@ -125,6 +133,7 @@ void makedeclare() {
 			lexema = pilha[i];
 		}
 		if(!set_type(lexema)) {
+			// é preciso passar pro set_type se este lexema é um vetor ou não
 			printf("Lexema not found: %s\n\n", lexema);
 		}
 		if(i < pilha.size() - 1) {
@@ -246,7 +255,7 @@ cmds:		PR_LEIA { pilha.clear(); } l_var { makescanf(); } cmds {}
 		|	PR_ESCREVA error cmds { yyerror("Error on printf"); }
 
 		|	IDENTIFICADOR { existsvar($1); } OP_ATRIB exp { fprintf(output, "%s = %s;\n", $1, $4); free($4); } cmds {}
-		|	IDENTIFICADOR error cmds { printf("Bad attribution.\n\n"); }
+		|	IDENTIFICADOR error cmds { yyerror("Error on attribution"); }
 
 		|	PR_SE cond PR_ENTAO { fprintf(output, "if (%s) {\n", $2); free($2); } cmds sen PR_FIM_SE { put("}\n"); } cmds {}
 
@@ -261,6 +270,7 @@ cmds:		PR_LEIA { pilha.clear(); } l_var { makescanf(); } cmds {}
 		|	%empty {};
 
 l_var:		var { pilha.push_back($1); } l_vrs
+		|	NUM_INTEIRO { pilha.push_back($1); } l_vrs
 		|	CONST_LIT { pilha.push_back($1); } l_vrs;
 
 l_vrs:		VIRGULA l_var {}

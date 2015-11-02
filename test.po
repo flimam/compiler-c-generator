@@ -4,12 +4,16 @@ inicio
 	// teste de comentário
 	declare i, quant: INTEIRO;
 	declare media, temp, notas[1..100]: REAL;
+	declare nome[1..200]: CARACTER;
 	declare reg: REGISTRO (declare i: INTEIRO; declare quant: INTEIRO; );
 	
 	escreva "Entre com a quantidade de notas (max 100):"
 	leia quant
 	
 	se (quant >= 1 && quant <= 100) entao
+
+		escreva "Escreva seu nome:\n"
+		leia nome
 
 		para i = 1 ate quant passo 1 faca
 			escreva "Entre com a nota ", i, ": \n"
@@ -29,11 +33,13 @@ inicio
 		fim_para
 		media = temp / quant
 		
-		se (media >= 6) entao
+		se (media >= TRUNCA(6)) entao
 			escreva "ALUNO APROVADO!\n"
 		senao
 			escreva "ALUNO REPROVADO!\n"
 		fim_se
+
+		escreva "Fim do acesso do usuário ", nome, ".\n"
 
 	senao
 		escreva "Quantidade de alunos invalida!!"
