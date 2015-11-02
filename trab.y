@@ -99,6 +99,13 @@ void makescanf() {
 bool set_type(char *lexema) {
 	for(int i = 0; i < tabela.size(); i++) {
 		if(!strcmp(tabela[i].lexema, lexema)) {
+			if(tabela[i].type != NONE) {
+				char* b;
+				asprintf(&b, "Identifier \"%s\" already declared", lexema);
+				yyerror(b);
+				free(b);
+				return true;
+			}
 			tabela[i].type = tipos;
 			return true;
 		}
