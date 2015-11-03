@@ -1,7 +1,7 @@
 algoritmo TESTE
 
 funcao calculamedia
-	entrada n1: CARACTER, n2: REAL
+	entrada n1: REAL, n2: REAL
 	saida resultado: REAL
 	resultado = (n1 + n2) / 2
 fim_funcao

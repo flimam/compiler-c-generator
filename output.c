@@ -5,7 +5,7 @@
 #define ABS(x) (x >= 0 ? x:-x)
 #define TRUNCA(x) ((int) (x/1))
 
-float calculamedia(char n1, float n2) {
+float calculamedia(float n1, float n2) {
 float resultado;
 
 resultado = (n1+n2)/2;
@@ -26,16 +26,16 @@ int main (int argc, char* argv[]) {
 int i, quant;
 float media, temp, notas[100];
 char nome[200];
-typedef struct st_728 {
+typedef struct st_792 {
 char titulo[50];
 int id;
-} st_728;
-st_728 livro1, livro2;
-typedef struct st_121 {
+} st_792;
+st_792 livro1, livro2;
+typedef struct st_956 {
 char marca[35];
 char modelo[50];
-} st_121;
-st_121 carro;
+} st_956;
+st_956 carro;
 
 printf("Escreva seu nome:\n");
 scanf("%s",  nome);
