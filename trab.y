@@ -106,7 +106,7 @@ void makescanf() {
 	char type, addr;
 	for(int i = 0; i < pilha.size(); i++) {
 		type = getType(pilha[i]);
-		addr = (type != ARRAY_CARACTER) ? '&' : '\0';
+		addr = (type != 's') ? '&' : ' ';
 		fprintf(output, "scanf(\"%%%c\", %c%s);\n", type, addr, pilha[i]);
 	}
 	pilha.clear();
