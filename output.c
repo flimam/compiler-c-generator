@@ -5,42 +5,53 @@
 #define ABS(x) (x >= 0 ? x:-x)
 #define TRUNCA(x) ((int) (x/1))
 
-void surpresa(void di,void j){
-float valor;
-int oi;
-printf("%p", di);
-di = oi+1;
-printf("Entre com a quantidade de notas (max 100):");
-return;
+float calculamedia(float n1, float n2) {
+float resultado;
+
+resultado = (n1+n2)/2;
+return resultado;
 }
 
-void ident(void ei,void ja){
-float valdor;
-int oid;
-printf("Entre com a quantidade de notas (max 100):");
-return w;
+void exemplo(char letra, int idade) {
+
+printf("A letra ");
+printf("%c", letra);
+printf(" possui ");
+printf("%d", idade);
+printf(" anos.\n");
 }
 
 int main (int argc, char* argv[]) {
+
 int i, quant;
 float media, temp, notas[100];
-char nome[200][50][10][20];
-float notas2[100], outra[2][3], outra2, outra3[2];
-int nota;
-typedef struct reg {
-int ii;
-int quanti;
-} reg;
+char nome[200];
+typedef struct st_792 {
+char titulo[50];
+int id;
+} st_792;
+st_792 livro1, livro2;
+typedef struct st_956 {
+char marca[35];
+char modelo[50];
+} st_956;
+st_956 carro;
+
+printf("Escreva seu nome:\n");
+scanf("%s",  nome);
 printf("Entre com a quantidade de notas (max 100):");
 scanf("%d", &quant);
 if (quant >= 1 && quant <= 100) {
-printf("Escreva seu nome:\n");
-scanf("%s", &nome);
 for (i = 1; i <= quant; i+=1) {
+do {
 printf("Entre com a nota ");
 printf("%d", i);
 printf(": \n");
 scanf("%f", &notas[i]);
+if (!(notas[i] >= 0 && notas[i] <= 10)) {
+printf("nota incorreta!\n");
+}
+} while (!(notas[i] >= 0 && notas[i] <= 10));
 }
 printf("Lista das Notas:\n");
 i = 1;
@@ -57,6 +68,9 @@ for (i = 1; i <= quant; i+=1) {
 temp = temp+notas[i];
 }
 media = temp/quant;
+printf("\nmedia: [");
+printf("%f", media);
+printf("]\n\n");
 if (media >= TRUNCA(6)) {
 printf("ALUNO APROVADO!\n");
 } else {

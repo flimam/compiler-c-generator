@@ -1,46 +1,41 @@
 algoritmo TESTE
 
-procedimento surpresa entrada di, j
-
-	declare valor: REAL;
-	declare oi: INTEIRO;
-	escreva di
-	di =  oi + 1
-	escreva "Entre com a quantidade de notas (max 100):"
-
-fim_procedimento
-
-funcao ident
-entrada
-ei, ja
-saida
-w
-declare valdor: REAL;
-declare oid: INTEIRO;
-escreva "Entre com a quantidade de notas (max 100):"
-
+funcao calculamedia
+	entrada n1: REAL, n2: REAL
+	saida resultado: REAL
+	resultado = (n1 + n2) / 2
 fim_funcao
 
+procedimento exemplo
+	entrada letra: CARACTER, idade: INTEIRO
+	escreva "A letra ", letra, " possui ", idade, " anos.\n"
+fim_procedimento
 
 inicio
 	// teste de comentário
 	declare i, quant: INTEIRO;
 	declare media, temp, notas[1..100]: REAL;
-	declare nome[1..200, 1..50, 1..10, 1..20]: CARACTER;
-	declare notas2[1..100], outra[1..2, 1..3], outra2, outra3[1..2]: REAL;
-	declare nota: LOGICO;
-	declare reg: REGISTRO (declare ii: INTEIRO; declare quanti: INTEIRO; );
+	declare nome[1..200]: CARACTER;
+
+	declare livro1, livro2: REGISTRO (declare titulo[1..50]: CARACTER; declare id: INTEIRO; );
+	declare carro: REGISTRO (declare marca[1..35]: CARACTER; declare modelo[1..50]: CARACTER; );
+
+	escreva "Escreva seu nome:\n"
+	leia nome
+
 	escreva "Entre com a quantidade de notas (max 100):"
 	leia quant
 	
 	se (quant >= 1 && quant <= 100) entao
 
-		escreva "Escreva seu nome:\n"
-		leia nome
-
 		para i = 1 ate quant passo 1 faca
-			escreva "Entre com a nota ", i, ": \n"
-			leia notas[i]
+			repita
+				escreva "Entre com a nota ", i, ": \n"
+				leia notas[i]
+				se (!(notas[i] >= 0 && notas[i] <= 10)) entao
+					escreva "nota incorreta!\n"
+				fim_se
+			ate (notas[i] >= 0 && notas[i] <= 10)
 		fim_para
 
 		escreva "Lista das Notas:\n"
@@ -56,6 +51,7 @@ inicio
 		fim_para
 		media = temp / quant
 		
+		escreva "\nmedia: [", media, "]\n\n"
 		se (media >= TRUNCA(6)) entao
 			escreva "ALUNO APROVADO!\n"
 		senao
