@@ -8,16 +8,15 @@
 void surpresa(void di,void j){
 float valor;
 int oi;
-doi = 1;
-di = 3;
+printf("%p", di);
 di = oi+1;
 printf("Entre com a quantidade de notas (max 100):");
 return;
 }
 
-void ident(void i,void j){
-float valor;
-int oi;
+void ident(void ei,void ja){
+float valdor;
+int oid;
 printf("Entre com a quantidade de notas (max 100):");
 return w;
 }
@@ -25,9 +24,19 @@ return w;
 int main (int argc, char* argv[]) {
 int i, quant;
 float media, temp, notas[100];
+char nome[200][50][10][20];
+float notas2[100], outra[2][3], outra2, outra3[2];
+int nota;
+typedef struct reg {
+int ii;
+int quanti;
+} reg;
+printf("%p", di);
 printf("Entre com a quantidade de notas (max 100):");
 scanf("%d", &quant);
 if (quant >= 1 && quant <= 100) {
+printf("Escreva seu nome:\n");
+scanf("%s", &nome);
 for (i = 1; i <= quant; i+=1) {
 printf("Entre com a nota ");
 printf("%d", i);
@@ -49,11 +58,14 @@ for (i = 1; i <= quant; i+=1) {
 temp = temp+notas[i];
 }
 media = temp/quant;
-if (media >= 6) {
+if (media >= TRUNCA(6)) {
 printf("ALUNO APROVADO!\n");
 } else {
 printf("ALUNO REPROVADO!\n");
 }
+printf("Fim do acesso do usuário ");
+printf("%s", nome);
+printf(".\n");
 } else {
 printf("Quantidade de alunos invalida!!");
 }

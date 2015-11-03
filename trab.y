@@ -7,8 +7,7 @@
 using namespace std;
 
 #define TAM_IDENT 100
-enum Tipo { NONE, LOGICO, INTEIRO, REAL, CARACTER, REGISTRO, FUNC };
-
+enum Tipo { NONE, LOGICO, INTEIRO, REAL, CARACTER, REGISTRO, ARRAY_LOGICO, ARRAY_INTEIRO, ARRAY_REAL, ARRAY_CARACTER, ARRAY_REGISTRO, FUNC };
 struct IDENT {
 	char lexema[TAM_IDENT];
 	Tipo type;
@@ -30,6 +29,7 @@ char PR_LOGICO_C[] = "int ";
 char PR_INTEIRO_C[] = "int ";
 char PR_REAL_C[] = "float ";
 char PR_CARACTER_C[] = "char ";
+char PR_REGISTRO_C[] = "typedef struct ";
 Tipo tipos;
 
 void put(const char* buffer) {
@@ -61,15 +61,26 @@ char getType(char* var) {
 			switch(tabela[i].type) {
 				case INTEIRO:
 				case LOGICO:
+				case ARRAY_INTEIRO:
+				case ARRAY_LOGICO:
 				resp = 'd';
 				break;
 
 				case REAL:
+				case ARRAY_REAL:
 				resp = 'f';
 				break;
 
 				case CARACTER:
+				resp = 'c';
+				break;
+
+				case ARRAY_CARACTER:
 				resp = 's';
+				break;
+
+				case FUNC:
+				resp = 'p';
 				break;
 			}
 			break;
@@ -91,15 +102,48 @@ void makeprintf() {
 }
 
 void makescanf() {
+	char type, addr;
 	for(int i = 0; i < pilha.size(); i++) {
-			fprintf(output, "scanf(\"%%%c\", &%s);\n", getType(pilha[i]), pilha[i]);
-		}
+		type = getType(pilha[i]);
+		addr = (type != ARRAY_CARACTER) ? '&' : '\0';
+		fprintf(output, "scanf(\"%%%c\", %c%s);\n", type, addr, pilha[i]);
+	}
 	pilha.clear();
 }
 
-bool set_type(char *lexema) {
+bool set_type(char *lexema, bool is_vector) {
 	for(int i = 0; i < tabela.size(); i++) {
 		if(!strcmp(tabela[i].lexema, lexema)) {
+			if(tabela[i].type != NONE) {
+				char* b;
+				asprintf(&b, "Identifier \"%s\" is already declared", lexema);
+				yyerror(b);
+				free(b);
+				return true;
+			}
+			if(is_vector) {
+				switch(tipos) {
+					case LOGICO:
+						tipos = ARRAY_LOGICO;
+					break;
+
+					case INTEIRO:
+						tipos = ARRAY_INTEIRO;
+					break;
+
+					case REAL:
+						tipos = ARRAY_REAL;
+					break;
+
+					case CARACTER:
+						tipos = ARRAY_CARACTER;
+					break;
+
+					case REGISTRO:
+						tipos = ARRAY_REGISTRO;
+					break;
+				}
+			}
 			tabela[i].type = tipos;
 			return true;
 		}
@@ -110,22 +154,26 @@ bool set_type(char *lexema) {
 void makedeclare() {
 	for (int i = 0; i < pilha.size(); i++) {
 		char *lexema;
+		bool is_vector = false;
 		if(pilha[i][0] == '[') {
-			lexema = pilha.back();
-			pilha.pop_back();
+			lexema = pilha[i + 1];
+			pilha.erase(pilha.begin() + i + 1);
 			fprintf(output, "%s%s", lexema, pilha[i]);
+			is_vector = true;
 		} else {
 			fprintf(output, "%s", pilha[i]);
 			lexema = pilha[i];
 		}
-		if(!set_type(lexema)) {
+		if(!set_type(lexema, is_vector)) {
 			printf("Lexema not found: %s\n\n", lexema);
 		}
 		if(i < pilha.size() - 1) {
 			fprintf(output, ", ");
 		}
 	}
-	put(";\n");
+	if(pilha.size() > 0) {
+		put(";\n");
+	}
 }
 
 char* makelist(int flag) {
@@ -134,7 +182,7 @@ char* makelist(int flag) {
 		if (flag){
 			strcat(bu, "void ");
 			tipos = FUNC;
-			set_type(pilha[i]);
+			set_type(pilha[i], false);
 		}
 		strcat(bu, pilha[i]);
 		if(i < pilha.size()-1) {
@@ -146,9 +194,16 @@ char* makelist(int flag) {
 }
 
 void makevector(char* num_total) {
-	char *num;
+	char *num, *temp;
 	int numero = atoi(num_total);
 	asprintf(&num, "[%d]", numero);
+	if(pilha.size()) {
+		if(pilha.back()[0] == '[') {
+			temp = pilha.back();
+			pilha.pop_back();
+			strcat(num, temp);
+		}
+	}
 	pilha.push_back(num);
 }
 
@@ -235,9 +290,9 @@ tipo:		PR_LOGICO { put(PR_LOGICO_C); tipos = LOGICO; }
 		|	PR_INTEIRO { put(PR_INTEIRO_C); tipos = INTEIRO; }
 		|	PR_REAL { put(PR_REAL_C); tipos = REAL; }
 		|	IDENTIFICADOR { existsvar($1); put($1); tipos = NONE; }
-		|	reg {};
+		|	{ put(PR_REGISTRO_C); tipos = REGISTRO; } reg {};
 
-reg:		PR_REGISTRO ABRE_PAR decl FECHA_PAR {};
+reg:		PR_REGISTRO { fprintf(output, "%s {\n", $1); } ABRE_PAR decl FECHA_PAR { pilha.clear(); fprintf(output, "} %s;\n", $1); };
 
 cmds:		PR_LEIA { pilha.clear(); } l_var { makescanf(); } cmds {}
 		|	PR_LEIA error cmds { yyerror("Error on scanf"); }
@@ -246,7 +301,7 @@ cmds:		PR_LEIA { pilha.clear(); } l_var { makescanf(); } cmds {}
 		|	PR_ESCREVA error cmds { yyerror("Error on printf"); }
 
 		|	IDENTIFICADOR { existsvar($1); } OP_ATRIB exp { fprintf(output, "%s = %s;\n", $1, $4); free($4); } cmds {}
-		|	IDENTIFICADOR error cmds { printf("Bad attribution.\n\n"); }
+		|	IDENTIFICADOR error cmds { yyerror("Error on attribution"); }
 
 		|	PR_SE cond PR_ENTAO { fprintf(output, "if (%s) {\n", $2); free($2); } cmds sen PR_FIM_SE { put("}\n"); } cmds {}
 
@@ -261,6 +316,7 @@ cmds:		PR_LEIA { pilha.clear(); } l_var { makescanf(); } cmds {}
 		|	%empty {};
 
 l_var:		var { pilha.push_back($1); } l_vrs
+		|	NUM_INTEIRO { pilha.push_back($1); } l_vrs
 		|	CONST_LIT { pilha.push_back($1); } l_vrs;
 
 l_vrs:		VIRGULA l_var {}
