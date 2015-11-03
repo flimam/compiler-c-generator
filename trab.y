@@ -209,6 +209,52 @@ void makevector(char* num_total) {
 	pilha.push_back(num);
 }
 
+void makeparams() {
+	for (int i = 0; i < pilha.size(); i+=2) {
+		printf("%s %s > ", pilha[i+1], pilha[i]);
+	}
+}
+
+void makefunction(char* id) {
+
+	char bu[TAM_IDENT] = "";
+	char *tipo, *retorno;
+
+	tipo = pilha.back();
+	pilha.pop_back();
+	retorno = pilha.back();
+	pilha.pop_back();
+
+	for (int i = 0; i < pilha.size(); i+=2) {
+		sprintf(bu, "%s%s %s", bu, pilha[i+1], pilha[i]);
+
+		// TODO
+
+		if(i < pilha.size()-2) {
+			strcat(bu, ", ");
+		}
+	}
+
+	fprintf(output,"%s %s(%s) {\n", tipo, id, bu);
+
+	free(id);
+	free(tipo);
+	pilha.clear();
+}
+
+void makeprocedure(char* id) {
+	char bu[TAM_IDENT] = "";
+	for (int i = 0; i < pilha.size(); i+=2) {
+		sprintf(bu, "%s%s %s", bu, pilha[i+1], pilha[i]);
+		if(i < pilha.size()-2) {
+			strcat(bu, ", ");
+		}
+	}
+	fprintf(output,"void %s(%s) {\n", id, bu);
+	free(id);
+	pilha.clear();
+}
+
 /*
 Verifica se a variável foi declarada na tabela de símbolos
 */
@@ -270,7 +316,7 @@ void check_uses() {
 
 %token <string> PR_FUNCAO PR_ENTRADA PR_SAIDA PR_FIM_FUNCAO PR_PROCMTO PR_FIM_PROCMTO
 
-%type <string> algo l_var l_vrs exp_a term_a fat_a adisub muldiv func exp exp_l op_rel rel fat_r op_log ind cmds cond
+%type <string> algo tipo l_var l_vrs exp_a term_a fat_a adisub muldiv func exp exp_l op_rel rel fat_r op_log ind cmds cond l_param l_params procs param
 
 %type <string> var
 // Não-terminal inicial
@@ -300,11 +346,11 @@ dim:		NUM_INTEIRO PONTO PONTO NUM_INTEIRO dims { makevector($4); };
 dims:		VIRGULA dim {}
 		|	%empty {};
 
-tipo:		PR_LOGICO { put(PR_LOGICO_C); tipos = LOGICO; }
-		|	PR_CARACTER { put(PR_CARACTER_C); tipos = CARACTER; }
-		|	PR_INTEIRO { put(PR_INTEIRO_C); tipos = INTEIRO; }
-		|	PR_REAL { put(PR_REAL_C); tipos = REAL; }
-		|	IDENTIFICADOR { existsvar($1); put($1); tipos = NONE; }
+tipo:		PR_LOGICO { $$ = strdup("int"); tipos = LOGICO; }
+		|	PR_CARACTER { $$ = strdup("char"); tipos = CARACTER; }
+		|	PR_INTEIRO { $$ = strdup("int"); tipos = INTEIRO; }
+		|	PR_REAL { $$ = strdup("float"); tipos = REAL; }
+		|	IDENTIFICADOR { existsvar($1); $$ = $1; tipos = NONE; }
 		|	{ put(PR_REGISTRO_C); tipos = REGISTRO; } reg {};
 
 reg:		PR_REGISTRO { fprintf(output, "%s {\n", $1); } ABRE_PAR decl FECHA_PAR { pilha.clear(); fprintf(output, "} %s;\n", $1); };
@@ -334,7 +380,7 @@ l_var:		var { pilha.push_back($1); } l_vrs
 		|	NUM_INTEIRO { pilha.push_back($1); } l_vrs
 		|	CONST_LIT { pilha.push_back($1); } l_vrs;
 
-l_vrs:		VIRGULA l_var {}
+l_vrs:		VIRGULA l_var
 		|	%empty {};
 
 var:		IDENTIFICADOR { existsvar($1); } ind { asprintf(&$$, "%s%s", $1, $3); free($1); free($3); }
@@ -346,10 +392,16 @@ ind:		ABRE_COL exp_a FECHA_COL ind { asprintf(&$$, "[%s]%s", $2, $4); free($2); 
 sen:		PR_SENAO { put("} else {\n"); } cmds {}
 		|	%empty;
 
-// Adicionado o "procs" no final das produções e a palavra vazia, permitindo várias declarações
-procs:		PR_FUNCAO IDENTIFICADOR PR_ENTRADA { pilha.clear(); fprintf(output,"void %s(",$2); free($2); func = true;} l_var{   put(makelist(1)); put("){\n");} PR_SAIDA { pilha.clear();} l_var {func=false;} decl cmds PR_FIM_FUNCAO { fprintf(output,"return %s;\n}\n\n",$7);    free($7);} procs {}
+param:		var DOIS_PONTOS tipo { pilha.push_back($1); pilha.push_back($3); $$ = $1; };
 
-		|	PR_PROCMTO IDENTIFICADOR PR_ENTRADA { pilha.clear(); fprintf(output,"void %s(",$2); free($2); func = true;} l_var{  put(makelist(1)); put("){\n"); func=false;} decl  cmds PR_FIM_PROCMTO {put("return;\n}\n\n");} procs {}
+l_param:	param l_params;
+
+l_params:	VIRGULA l_param
+		|	%empty {};
+
+procs:		PR_FUNCAO IDENTIFICADOR PR_ENTRADA { pilha.clear(); } l_param PR_SAIDA param { makefunction($2); } decl cmds PR_FIM_FUNCAO { fprintf(output,"return %s;\n}\n\n",$7); free($7); } procs {}
+
+		|	PR_PROCMTO IDENTIFICADOR PR_ENTRADA { pilha.clear(); } l_param { makeprocedure($2); } decl cmds PR_FIM_PROCMTO { put("}\n\n"); } procs {}
 
 		|	PR_FUNCAO error PR_FIM_FUNCAO procs { yyerror("On FUNCAO definition. ignoring.."); }
 		|	PR_PROCMTO error PR_FIM_PROCMTO procs { yyerror("On PROCMTO definition. ignoring.."); }

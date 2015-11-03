@@ -5,37 +5,34 @@
 #define ABS(x) (x >= 0 ? x:-x)
 #define TRUNCA(x) ((int) (x/1))
 
-void surpresa(void di,void j){
-float valor;
-int oi;
-printf("%p", di);
-di = oi+1;
-printf("Entre com a quantidade de notas (max 100):");
-return;
+float calculamedia(float n1, float n2) {
+media = (n1+n2)/2;
+return media;
 }
 
-void ident(void ei,void ja){
-float valdor;
-int oid;
-printf("Entre com a quantidade de notas (max 100):");
-return w;
+void arruma(char letra, int idade) {
+printf("A letra ");
+printf("%?", letra);
+printf(" possui ");
+printf("%?", idade);
+printf(" anos.\n");
 }
 
 int main (int argc, char* argv[]) {
-int i, quant;
-float media, temp, notas[100];
-char nome[200][50][10][20];
-float notas2[100], outra[2][3], outra2, outra3[2];
-int nota;
-typedef struct reg {
-int ii;
-int quanti;
-} reg;
+i, quant;
+media, temp, notas[100];
+nome[200][50][10][20];
+notas2[100], outra[2][3], outra2, outra3[2];
+nota;
+typedef struct gabriel {
+ii;
+quanti;
+} gabriel;
 printf("Entre com a quantidade de notas (max 100):");
 scanf("%d", &quant);
 if (quant >= 1 && quant <= 100) {
 printf("Escreva seu nome:\n");
-scanf("%s", &nome);
+scanf("%s",  nome);
 for (i = 1; i <= quant; i+=1) {
 printf("Entre com a nota ");
 printf("%d", i);
