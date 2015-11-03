@@ -5,10 +5,21 @@
 #define ABS(x) (x >= 0 ? x:-x)
 #define TRUNCA(x) ((int) (x/1))
 
-void surpresa(){
+void surpresa(void di,void j){
 float valor;
 int oi;
+doi = 1;
+di = 3;
+di = oi+1;
+printf("Entre com a quantidade de notas (max 100):");
 return;
+}
+
+void ident(void i,void j){
+float valor;
+int oi;
+printf("Entre com a quantidade de notas (max 100):");
+return w;
 }
 
 int main (int argc, char* argv[]) {

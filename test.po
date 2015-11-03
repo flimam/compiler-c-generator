@@ -1,11 +1,24 @@
 algoritmo TESTE
 
-procedimento surpresa entrada i, j
+procedimento surpresa entrada di, j
 
 	declare valor: REAL;
 	declare oi: INTEIRO;
+	di =  oi + 1
+	escreva "Entre com a quantidade de notas (max 100):"
 
 fim_procedimento
+
+funcao ident
+entrada
+i, j
+saida
+w
+declare valor: REAL;
+declare oi: INTEIRO;
+escreva "Entre com a quantidade de notas (max 100):"
+
+fim_funcao
 
 
 inicio

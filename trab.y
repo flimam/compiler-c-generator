@@ -7,7 +7,7 @@
 using namespace std;
 
 #define TAM_IDENT 100
-enum Tipo { NONE, LOGICO, INTEIRO, REAL, CARACTER, REGISTRO };
+enum Tipo { NONE, LOGICO, INTEIRO, REAL, CARACTER, REGISTRO, FUNC };
 
 struct IDENT {
 	char lexema[TAM_IDENT];
@@ -19,6 +19,7 @@ extern void yyerror (const char *);
 extern FILE* output;
 extern vector<IDENT> tabela;
 vector<char*> pilha;
+bool func;
 
 char PR_ALGORITMO_C[] = "#include <stdio.h>\n#include <stdlib.h>\n\n";
 char MACROS_C[] = "#define RESTO(x,y) (x%y)\n#define ABS(x) (x >= 0 ? x:-x)\n#define TRUNCA(x) ((int) (x/1))\n\n";
@@ -127,9 +128,14 @@ void makedeclare() {
 	put(";\n");
 }
 
-char* makelist() {
+char* makelist(int flag) {
 	char bu[TAM_IDENT] = "";
 	for (int i = 0; i < pilha.size(); i++) {
+		if (flag){
+			strcat(bu, "void ");
+			tipos = FUNC;
+			set_type(pilha[i]);
+		}
 		strcat(bu, pilha[i]);
 		if(i < pilha.size()-1) {
 			strcat(bu, ",");
@@ -150,13 +156,16 @@ void makevector(char* num_total) {
 Verifica se a variável foi declarada na tabela de símbolos
 */
 void existsvar(char* var) {
-	char* b;
-	for(int i = 0; i < tabela.size(); i++) {
-		if(!strcmp(tabela[i].lexema, var) && tabela[i].type != NONE) return;
+	if (!func){
+		char* b;
+		for(int i = 0; i < tabela.size(); i++) {
+			if(!strcmp(tabela[i].lexema, var) && tabela[i].type != NONE) return;
+		}
+		asprintf(&b, "Identifier \"%s\" used but not declared", var);
+		yyerror(b);
+		free(b);
 	}
-	asprintf(&b, "Identifier \"%s\" used but not declared", var);
-	yyerror(b);
-	free(b);
+	
 }
 
 %}
@@ -247,7 +256,7 @@ cmds:		PR_LEIA { pilha.clear(); } l_var { makescanf(); } cmds {}
 
 		|	PR_REPITA { put("do {\n"); } cmds PR_ATE cond { fprintf(output, "} while (!(%s));\n", $5); free($5); } cmds {}
 
-		| 	IDENTIFICADOR { existsvar($1); } ABRE_PAR { pilha.clear(); } l_var FECHA_PAR { fprintf(output, "%s(%s)", $1, makelist()); free($1); } cmds {}
+		| 	IDENTIFICADOR { existsvar($1); } ABRE_PAR { pilha.clear(); } l_var FECHA_PAR { fprintf(output, "%s(%s)", $1, makelist(0)); free($1); } cmds {}
 		
 		|	%empty {};
 
@@ -267,9 +276,9 @@ sen:		PR_SENAO { put("} else {\n"); } cmds {}
 		|	%empty;
 
 // Adicionado o "procs" no final das produções e a palavra vazia, permitindo várias declarações
-procs:		PR_FUNCAO IDENTIFICADOR PR_ENTRADA { pilha.clear();  } l_var PR_SAIDA { pilha.clear(); } l_var decl cmds PR_FIM_FUNCAO procs {}
+procs:		PR_FUNCAO IDENTIFICADOR PR_ENTRADA { pilha.clear(); fprintf(output,"void %s(",$2); free($2); func = true;} l_var{   put(makelist(1)); put("){\n");} PR_SAIDA { pilha.clear();} l_var {func=false;} decl cmds PR_FIM_FUNCAO { fprintf(output,"return %s;\n}\n\n",$7);    free($7);} procs {}
 
-		|	PR_PROCMTO IDENTIFICADOR PR_ENTRADA { pilha.clear(); fprintf(output,"void %s(",$2); free($2);  } l_var{  /*depende do email do chastel*/  put("){\n");} decl  cmds PR_FIM_PROCMTO {put("return;\n}\n\n");} procs {}
+		|	PR_PROCMTO IDENTIFICADOR PR_ENTRADA { pilha.clear(); fprintf(output,"void %s(",$2); free($2); func = true;} l_var{  put(makelist(1)); put("){\n"); func=false;} decl  cmds PR_FIM_PROCMTO {put("return;\n}\n\n");} procs {}
 
 		|	PR_FUNCAO error PR_FIM_FUNCAO procs { yyerror("On FUNCAO definition. ignoring.."); }
 		|	PR_PROCMTO error PR_FIM_PROCMTO procs { yyerror("On PROCMTO definition. ignoring.."); }
@@ -287,7 +296,7 @@ term_a:		fat_a adisub term_a { asprintf(&$$, "%s%s%s", $1, $2, $3);  free($1); f
 fat_a:		exp_a OP_ARIT_EXPO exp_a { asprintf(&$$, "%s%s%s", $1, $2, $3); free($1); free($2); free($3); }
 		|	exp_a OP_ARIT_RAD exp_a { asprintf(&$$, "%s%s%s", $1, $2, $3); free($1); free($2); free($3); }
 		|	ABRE_PAR exp_a FECHA_PAR { asprintf(&$$, "(%s)", $2); free($2); }
-		|	func ABRE_PAR { pilha.clear(); } l_var FECHA_PAR { asprintf(&$$, "%s(%s)", $1, makelist()); free($1); }
+		|	func ABRE_PAR { pilha.clear(); } l_var FECHA_PAR { asprintf(&$$, "%s(%s)", $1, makelist(0)); free($1); }
 		|	var { $$ = $1; }
 		|	NUM_INTEIRO { $$ = $1; }
 		|	NUM_REAL { $$ = $1; };
