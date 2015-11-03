@@ -5,6 +5,22 @@
 #define ABS(x) (x >= 0 ? x:-x)
 #define TRUNCA(x) ((int) (x/1))
 
+void surpresa(void di,void j){
+float valor;
+int oi;
+printf("%p", di);
+di = oi+1;
+printf("Entre com a quantidade de notas (max 100):");
+return;
+}
+
+void ident(void ei,void ja){
+float valdor;
+int oid;
+printf("Entre com a quantidade de notas (max 100):");
+return w;
+}
+
 int main (int argc, char* argv[]) {
 int i, quant;
 float media, temp, notas[100];
@@ -15,6 +31,7 @@ typedef struct reg {
 int ii;
 int quanti;
 } reg;
+printf("%p", di);
 printf("Entre com a quantidade de notas (max 100):");
 scanf("%d", &quant);
 if (quant >= 1 && quant <= 100) {
