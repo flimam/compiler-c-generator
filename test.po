@@ -18,9 +18,9 @@ inicio
 	declare nome[1..200]: CARACTER;
 
 	declare maria, gabriel: REGISTRO (declare ii: INTEIRO; declare quanti: INTEIRO; );
-	//declare joao: REGISTRO (declare aa: REAL; declare bb: CARACTER; );
-	//declare debora: REGISTRO (declare cc: REAL; declare dd: CARACTER; );
-	//declare felipe: REGISTRO (declare ee: REAL; declare ff: CARACTER; );
+	declare joao: REGISTRO (declare aa: REAL; declare bb: CARACTER; );
+	declare debora: REGISTRO (declare cc: REAL; declare dd: CARACTER; );
+	declare felipe: REGISTRO (declare ee: REAL; declare ff: CARACTER; );
 
 
 	escreva "Entre com a quantidade de notas (max 100):"

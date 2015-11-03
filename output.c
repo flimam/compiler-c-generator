@@ -24,11 +24,26 @@ int main (int argc, char* argv[]) {
 int i, quant;
 float media, temp, notas[100];
 char nome[200];
-typedef struct st_2 {
+typedef struct st_528 {
 int ii;
 int quanti;
-} st_2;
-st_2 maria, gabriel;
+} st_528;
+st_528 maria, gabriel;
+typedef struct st_350 {
+float aa;
+char bb;
+} st_350;
+st_350 joao;
+typedef struct st_371 {
+float cc;
+char dd;
+} st_371;
+st_371 debora;
+typedef struct st_551 {
+float ee;
+char ff;
+} st_551;
+st_551 felipe;
 
 printf("Entre com a quantidade de notas (max 100):");
 scanf("%d", &quant);

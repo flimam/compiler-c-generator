@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <vector>
 
 using namespace std;
@@ -143,7 +144,7 @@ void insereTabela(const char* buffer) {
 }
 
 int main(int argc, char *argv[]) {
-    srand(23);
+    srand(time(NULL));
     /* Abertura do arquivo de entrada. */
     if ( argc > 1 ) {
         file = fopen(argv[1], "r");

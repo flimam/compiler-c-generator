@@ -154,7 +154,7 @@ char* makedeclare(char* tipo) {
 	char bu[100] = "";
 
 	if(tipos == REGISTRO) {
-		int num = rand() % 100;
+		int num = rand() % 1000;
 		sprintf(bu, "typedef struct st_%d {\n%s} st_%d;\nst_%d ", num, tipo, num, num);
 	} else {
 		sprintf(bu, "%s ", tipo);
