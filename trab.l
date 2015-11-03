@@ -14,6 +14,7 @@ enum Tipo { NONE, LOGICO, INTEIRO, REAL, CARACTER, REGISTRO, ARRAY_LOGICO, ARRAY
 struct IDENT {
     char lexema[TAM_IDENT];
     Tipo type;
+    bool used;
 };
 
 FILE* file = NULL;

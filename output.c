@@ -31,7 +31,6 @@ typedef struct reg {
 int ii;
 int quanti;
 } reg;
-printf("%p", di);
 printf("Entre com a quantidade de notas (max 100):");
 scanf("%d", &quant);
 if (quant >= 1 && quant <= 100) {

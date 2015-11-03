@@ -11,6 +11,7 @@ enum Tipo { NONE, LOGICO, INTEIRO, REAL, CARACTER, REGISTRO, ARRAY_LOGICO, ARRAY
 struct IDENT {
 	char lexema[TAM_IDENT];
 	Tipo type;
+	bool used;
 };
 
 extern int yylex ();
@@ -145,6 +146,7 @@ bool set_type(char *lexema, bool is_vector) {
 				}
 			}
 			tabela[i].type = tipos;
+			tabela[i].used = false;
 			return true;
 		}
 	}
@@ -214,13 +216,26 @@ void existsvar(char* var) {
 	if (!func){
 		char* b;
 		for(int i = 0; i < tabela.size(); i++) {
-			if(!strcmp(tabela[i].lexema, var) && tabela[i].type != NONE) return;
+			if(!strcmp(tabela[i].lexema, var) && tabela[i].type != NONE) {
+				tabela[i].used = true;
+				return;
+			}
 		}
 		asprintf(&b, "Identifier \"%s\" used but not declared", var);
 		yyerror(b);
 		free(b);
 	}
-	
+}
+
+void check_uses() {
+	char* b;
+	for(int i = 0; i < tabela.size(); i++) {
+		if(!tabela[i].used && tabela[i].type != NONE) {
+			asprintf(&b, "Identifier \"%s\" declared but not used", tabela[i].lexema);
+			yyerror(b);
+			free(b);
+		}
+	}
 }
 
 %}
@@ -265,7 +280,7 @@ void existsvar(char* var) {
 
 // Definição das produções da gramática
 
-algo:		PR_ALGORITMO { put(PR_ALGORITMO_C); put(MACROS_C); } IDENTIFICADOR procs PR_INICIO { put(PR_INICIO_C); } decl cmds PR_FIM_ALGO { put(PR_FIM_ALGO_C); };
+algo:		PR_ALGORITMO { put(PR_ALGORITMO_C); put(MACROS_C); } IDENTIFICADOR procs PR_INICIO { put(PR_INICIO_C); } decl cmds PR_FIM_ALGO { put(PR_FIM_ALGO_C); check_uses(); };
 
 decl:		PR_DECLARE { pilha.clear(); } l_ids DOIS_PONTOS tipo PONTO_VIRGULA { makedeclare(); } decl {}
 		|	PR_DECLARE error PONTO_VIRGULA decl { yyerror("Declaration error, ignoring variable"); }
