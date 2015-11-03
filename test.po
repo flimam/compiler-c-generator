@@ -6,7 +6,7 @@ funcao calculamedia
 	resultado = (n1 + n2) / 2
 fim_funcao
 
-procedimento arruma
+procedimento exemplo
 	entrada letra: CARACTER, idade: INTEIRO
 	escreva "A letra ", letra, " possui ", idade, " anos.\n"
 fim_procedimento
@@ -16,10 +16,11 @@ inicio
 	declare i, quant: INTEIRO;
 	declare media, temp, notas[1..100]: REAL;
 	declare nome[1..200]: CARACTER;
-	declare gabriel: REGISTRO (declare ii: INTEIRO; declare quanti: INTEIRO; );
-	declare joao: REGISTRO (declare aa: REAL; declare bb: CARACTER; );
-	declare debora: REGISTRO (declare cc: REAL; declare dd: CARACTER; );
-	declare felipe: REGISTRO (declare ee: REAL; declare ff: CARACTER; );
+
+	declare maria, gabriel: REGISTRO (declare ii: INTEIRO; declare quanti: INTEIRO; );
+	//declare joao: REGISTRO (declare aa: REAL; declare bb: CARACTER; );
+	//declare debora: REGISTRO (declare cc: REAL; declare dd: CARACTER; );
+	//declare felipe: REGISTRO (declare ee: REAL; declare ff: CARACTER; );
 
 
 	escreva "Entre com a quantidade de notas (max 100):"

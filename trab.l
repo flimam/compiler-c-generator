@@ -124,6 +124,10 @@ void yyerror(const char *str) {
     printf("ERROR\nLine %d: %s\n\n", yylineno, str);
 }
 
+void yywarning(const char *str) { 
+    printf("WARNING\nLine %d: %s\n\n", yylineno, str);
+}
+
 int yywrap(void) { 
     return 1;
 }
@@ -139,6 +143,7 @@ void insereTabela(const char* buffer) {
 }
 
 int main(int argc, char *argv[]) {
+    srand(23);
     /* Abertura do arquivo de entrada. */
     if ( argc > 1 ) {
         file = fopen(argv[1], "r");
@@ -162,7 +167,7 @@ int main(int argc, char *argv[]) {
     printf("\n----------------------------\n| LISTA DE IDENTIFICADORES |\n----------------------------\n");
     
     for(int i = 0; i < tabela.size(); i++) {
-        printf("%s, ", tabela[i].lexema);
+        printf("%s (%d), ", tabela[i].lexema, tabela[i].type);
     }
     printf("\n\n");
 
