@@ -412,9 +412,9 @@ l_param:	param l_params;
 l_params:	VIRGULA l_param
 		|	%empty {};
 
-procs:		PR_FUNCAO IDENTIFICADOR PR_ENTRADA { pilha.clear(); func = true; } l_param PR_SAIDA param { makefunction($2); func = false; } decl cmds PR_FIM_FUNCAO { fprintf(output,"return %s;\n}\n\n",$7); free($7); } procs {}
+procs:		PR_FUNCAO IDENTIFICADOR PR_ENTRADA { pilha.clear(); func = true; } l_param PR_SAIDA param { makefunction($2); func = false; } decl { fprintf(output, "%s\n", $9); } cmds PR_FIM_FUNCAO { fprintf(output,"return %s;\n}\n\n",$7); free($7); } procs {}
 
-		|	PR_PROCMTO IDENTIFICADOR PR_ENTRADA { pilha.clear(); func = true; } l_param { makeprocedure($2); func = false; } decl cmds PR_FIM_PROCMTO { put("}\n\n"); } procs {}
+		|	PR_PROCMTO IDENTIFICADOR PR_ENTRADA { pilha.clear(); func = true; } l_param { makeprocedure($2); func = false; } decl { fprintf(output, "%s\n", $7); } cmds PR_FIM_PROCMTO { put("}\n\n"); } procs {}
 
 		|	PR_FUNCAO error PR_FIM_FUNCAO procs { yyerror("On FUNCAO definition. ignoring.."); }
 		|	PR_PROCMTO error PR_FIM_PROCMTO procs { yyerror("On PROCMTO definition. ignoring.."); }
@@ -449,7 +449,7 @@ func:		PR_ABS { $$ = $1; }
 		|	IDENTIFICADOR { existsvar($1); $$ = $1; }
 
 exp_l:		rel op_log exp_l { asprintf(&$$, "%s %s %s", $1, $2, $3); free($1); free($2); free($3); }
-		|	OP_LOG_NAO ABRE_PAR rel FECHA_PAR { asprintf(&$$, "%s(%s)", $1, $3); free($1); free($3); }
+		|	OP_LOG_NAO ABRE_PAR exp_l FECHA_PAR { asprintf(&$$, "%s(%s)", $1, $3); free($1); free($3); }
 		| 	rel { $$ = $1; };
 
 rel:		fat_r op_rel fat_r { asprintf(&$$, "%s %s %s", $1, $2, $3); free($1); free($2); free($3); };

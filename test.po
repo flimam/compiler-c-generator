@@ -17,23 +17,25 @@ inicio
 	declare media, temp, notas[1..100]: REAL;
 	declare nome[1..200]: CARACTER;
 
-	declare maria, gabriel: REGISTRO (declare ii: INTEIRO; declare quanti: INTEIRO; );
-	declare joao: REGISTRO (declare aa: REAL; declare bb: CARACTER; );
-	declare debora: REGISTRO (declare cc: REAL; declare dd: CARACTER; );
-	declare felipe: REGISTRO (declare ee: REAL; declare ff: CARACTER; );
+	declare livro1, livro2: REGISTRO (declare titulo[1..50]: CARACTER; declare id: INTEIRO; );
+	declare carro: REGISTRO (declare marca[1..35]: CARACTER; declare modelo[1..50]: CARACTER; );
 
+	escreva "Escreva seu nome:\n"
+	leia nome
 
 	escreva "Entre com a quantidade de notas (max 100):"
 	leia quant
 	
 	se (quant >= 1 && quant <= 100) entao
 
-		escreva "Escreva seu nome:\n"
-		leia nome
-
 		para i = 1 ate quant passo 1 faca
-			escreva "Entre com a nota ", i, ": \n"
-			leia notas[i]
+			repita
+				escreva "Entre com a nota ", i, ": \n"
+				leia notas[i]
+				se (!(notas[i] >= 0 && notas[i] <= 10)) entao
+					escreva "nota incorreta!\n"
+				fim_se
+			ate (notas[i] >= 0 && notas[i] <= 10)
 		fim_para
 
 		escreva "Lista das Notas:\n"
@@ -49,6 +51,7 @@ inicio
 		fim_para
 		media = temp / quant
 		
+		escreva "\nmedia: [", media, "]\n\n"
 		se (media >= TRUNCA(6)) entao
 			escreva "ALUNO APROVADO!\n"
 		senao
