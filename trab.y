@@ -26,10 +26,6 @@ char MACROS_C[] = "#define RESTO(x,y) (x%y)\n#define ABS(x) (x >= 0 ? x:-x)\n#de
 char PR_INICIO_C[] = "int main (int argc, char* argv[]) {\n";
 char PR_FIM_ALGO_C[] = "return 0;\n}\n";
 
-char PR_LOGICO_C[] = "int ";
-char PR_INTEIRO_C[] = "int ";
-char PR_REAL_C[] = "float ";
-char PR_CARACTER_C[] = "char ";
 char PR_REGISTRO_C[] = "typedef struct ";
 Tipo tipos;
 
@@ -178,14 +174,9 @@ void makedeclare() {
 	}
 }
 
-char* makelist(int flag) {
+char* makelist() {
 	char bu[TAM_IDENT] = "";
 	for (int i = 0; i < pilha.size(); i++) {
-		if (flag){
-			strcat(bu, "void ");
-			tipos = FUNC;
-			set_type(pilha[i], false);
-		}
 		strcat(bu, pilha[i]);
 		if(i < pilha.size()-1) {
 			strcat(bu, ",");
@@ -209,28 +200,30 @@ void makevector(char* num_total) {
 	pilha.push_back(num);
 }
 
-void makeparams() {
-	for (int i = 0; i < pilha.size(); i+=2) {
-		printf("%s %s > ", pilha[i+1], pilha[i]);
-	}
-}
-
 void makefunction(char* id) {
 
 	char bu[TAM_IDENT] = "";
 	char *tipo, *retorno;
+
+	tipos = (Tipo) atoi(pilha.back());
+	pilha.pop_back();
 
 	tipo = pilha.back();
 	pilha.pop_back();
 	retorno = pilha.back();
 	pilha.pop_back();
 
-	for (int i = 0; i < pilha.size(); i+=2) {
+	set_type(retorno, false);
+
+
+
+	for (int i = 0; i < pilha.size(); i+=3) {
 		sprintf(bu, "%s%s %s", bu, pilha[i+1], pilha[i]);
 
-		// TODO
+		tipos = (Tipo) atoi(pilha[i+2]);
+		set_type(pilha[i], false);
 
-		if(i < pilha.size()-2) {
+		if(i < pilha.size()-3) {
 			strcat(bu, ", ");
 		}
 	}
@@ -244,9 +237,13 @@ void makefunction(char* id) {
 
 void makeprocedure(char* id) {
 	char bu[TAM_IDENT] = "";
-	for (int i = 0; i < pilha.size(); i+=2) {
+	for (int i = 0; i < pilha.size(); i+=3) {
 		sprintf(bu, "%s%s %s", bu, pilha[i+1], pilha[i]);
-		if(i < pilha.size()-2) {
+
+		tipos = (Tipo) atoi(pilha[i+2]);
+		set_type(pilha[i], false);
+
+		if(i < pilha.size()-3) {
 			strcat(bu, ", ");
 		}
 	}
@@ -328,7 +325,7 @@ void check_uses() {
 
 algo:		PR_ALGORITMO { put(PR_ALGORITMO_C); put(MACROS_C); } IDENTIFICADOR procs PR_INICIO { put(PR_INICIO_C); } decl cmds PR_FIM_ALGO { put(PR_FIM_ALGO_C); check_uses(); };
 
-decl:		PR_DECLARE { pilha.clear(); } l_ids DOIS_PONTOS tipo PONTO_VIRGULA { makedeclare(); } decl {}
+decl:		PR_DECLARE { pilha.clear(); } l_ids DOIS_PONTOS tipo { fprintf(output, "%s ", $5); } PONTO_VIRGULA { makedeclare(); } decl {}
 		|	PR_DECLARE error PONTO_VIRGULA decl { yyerror("Declaration error, ignoring variable"); }
 		|	%empty {};
 
@@ -353,7 +350,7 @@ tipo:		PR_LOGICO { $$ = strdup("int"); tipos = LOGICO; }
 		|	IDENTIFICADOR { existsvar($1); $$ = $1; tipos = NONE; }
 		|	{ put(PR_REGISTRO_C); tipos = REGISTRO; } reg {};
 
-reg:		PR_REGISTRO { fprintf(output, "%s {\n", $1); } ABRE_PAR decl FECHA_PAR { pilha.clear(); fprintf(output, "} %s;\n", $1); };
+reg:		PR_REGISTRO { fprintf(output, "%s {\n", $1); } ABRE_PAR decl FECHA_PAR { pilha.clear(); fprintf(output, "} %s;\n\n", $1); };
 
 cmds:		PR_LEIA { pilha.clear(); } l_var { makescanf(); } cmds {}
 		|	PR_LEIA error cmds { yyerror("Error on scanf"); }
@@ -372,7 +369,7 @@ cmds:		PR_LEIA { pilha.clear(); } l_var { makescanf(); } cmds {}
 
 		|	PR_REPITA { put("do {\n"); } cmds PR_ATE cond { fprintf(output, "} while (!(%s));\n", $5); free($5); } cmds {}
 
-		| 	IDENTIFICADOR { existsvar($1); } ABRE_PAR { pilha.clear(); } l_var FECHA_PAR { fprintf(output, "%s(%s)", $1, makelist(0)); free($1); } cmds {}
+		| 	IDENTIFICADOR { existsvar($1); } ABRE_PAR { pilha.clear(); } l_var FECHA_PAR { fprintf(output, "%s(%s)", $1, makelist()); free($1); } cmds {}
 		
 		|	%empty {};
 
@@ -392,16 +389,16 @@ ind:		ABRE_COL exp_a FECHA_COL ind { asprintf(&$$, "[%s]%s", $2, $4); free($2); 
 sen:		PR_SENAO { put("} else {\n"); } cmds {}
 		|	%empty;
 
-param:		var DOIS_PONTOS tipo { pilha.push_back($1); pilha.push_back($3); $$ = $1; };
+param:		var DOIS_PONTOS tipo { pilha.push_back($1); pilha.push_back($3); char *ub; asprintf(&ub, "%d", tipos); pilha.push_back(ub); $$ = $1; };
 
 l_param:	param l_params;
 
 l_params:	VIRGULA l_param
 		|	%empty {};
 
-procs:		PR_FUNCAO IDENTIFICADOR PR_ENTRADA { pilha.clear(); } l_param PR_SAIDA param { makefunction($2); } decl cmds PR_FIM_FUNCAO { fprintf(output,"return %s;\n}\n\n",$7); free($7); } procs {}
+procs:		PR_FUNCAO IDENTIFICADOR PR_ENTRADA { pilha.clear(); func = true; } l_param PR_SAIDA param { makefunction($2); func = false; } decl cmds PR_FIM_FUNCAO { fprintf(output,"return %s;\n}\n\n",$7); free($7); } procs {}
 
-		|	PR_PROCMTO IDENTIFICADOR PR_ENTRADA { pilha.clear(); } l_param { makeprocedure($2); } decl cmds PR_FIM_PROCMTO { put("}\n\n"); } procs {}
+		|	PR_PROCMTO IDENTIFICADOR PR_ENTRADA { pilha.clear(); func = true; } l_param { makeprocedure($2); func = false; } decl cmds PR_FIM_PROCMTO { put("}\n\n"); } procs {}
 
 		|	PR_FUNCAO error PR_FIM_FUNCAO procs { yyerror("On FUNCAO definition. ignoring.."); }
 		|	PR_PROCMTO error PR_FIM_PROCMTO procs { yyerror("On PROCMTO definition. ignoring.."); }
@@ -419,7 +416,7 @@ term_a:		fat_a adisub term_a { asprintf(&$$, "%s%s%s", $1, $2, $3);  free($1); f
 fat_a:		exp_a OP_ARIT_EXPO exp_a { asprintf(&$$, "%s%s%s", $1, $2, $3); free($1); free($2); free($3); }
 		|	exp_a OP_ARIT_RAD exp_a { asprintf(&$$, "%s%s%s", $1, $2, $3); free($1); free($2); free($3); }
 		|	ABRE_PAR exp_a FECHA_PAR { asprintf(&$$, "(%s)", $2); free($2); }
-		|	func ABRE_PAR { pilha.clear(); } l_var FECHA_PAR { asprintf(&$$, "%s(%s)", $1, makelist(0)); free($1); }
+		|	func ABRE_PAR { pilha.clear(); } l_var FECHA_PAR { asprintf(&$$, "%s(%s)", $1, makelist()); free($1); }
 		|	var { $$ = $1; }
 		|	NUM_INTEIRO { $$ = $1; }
 		|	NUM_REAL { $$ = $1; };

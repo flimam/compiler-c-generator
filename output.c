@@ -5,30 +5,44 @@
 #define ABS(x) (x >= 0 ? x:-x)
 #define TRUNCA(x) ((int) (x/1))
 
-float calculamedia(float n1, float n2) {
-media = (n1+n2)/2;
-return media;
+float calculamedia(char n1, float n2) {
+resultado = (n1+n2)/2;
+return resultado;
 }
 
 void arruma(char letra, int idade) {
 printf("A letra ");
-printf("%?", letra);
+printf("%c", letra);
 printf(" possui ");
-printf("%?", idade);
+printf("%d", idade);
 printf(" anos.\n");
 }
 
 int main (int argc, char* argv[]) {
-i, quant;
-media, temp, notas[100];
-nome[200][50][10][20];
-notas2[100], outra[2][3], outra2, outra3[2];
-nota;
+int i, quant;
+float media, temp, notas[100];
+char nome[200];
 typedef struct gabriel {
-ii;
-quanti;
+int ii;
+int quanti;
 } gabriel;
-printf("Entre com a quantidade de notas (max 100):");
+
+(null) typedef struct joao {
+float aa;
+char bb;
+} joao;
+
+int typedef struct debora {
+float cc;
+char dd;
+} debora;
+
+float typedef struct felipe {
+float ee;
+char ff;
+} felipe;
+
+float printf("Entre com a quantidade de notas (max 100):");
 scanf("%d", &quant);
 if (quant >= 1 && quant <= 100) {
 printf("Escreva seu nome:\n");
